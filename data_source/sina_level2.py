@@ -1,15 +1,23 @@
 class CallbackBase:
     def __init__(self):
         self.__callbackMap = {}
-        print("begin")
+        #for x in dir(self):
+        #    print("x", x)
+        #    for k in (getattr(self, x)):
+        #        print(k)
+
+        #return None
         for k in (getattr(self, x) for x in dir(self)):
+            #print("x", x)
             print(k)
             if hasattr(k, "bind_to_event"):
+                print("bind_to_event")
                 self.__callbackMap.setdefault(k.bind_to_event, []).append(k)
 
             elif hasattr(k, "bind_to_event_list"):
                 for j in k.bind_to_event_list:
                     self.__callbackMap.setdefault(j, []).append(k)
+
 
     ## staticmethod is only used to create a namespace
     @staticmethod
@@ -39,13 +47,13 @@ class MyClass(CallbackBase):
     EVENT1 = 1
     EVENT2 = 2
 
-    @CallbackBase.callback(EVENT1)
+    #@CallbackBase.callback(EVENT1)
     def handler1(self, param=None):
         print("handler1 with param: %s" % str(param))
         return None
 
 
-    @CallbackBase.callbacklist([EVENT1, EVENT2])
+    #@CallbackBase.callbacklist([EVENT1, EVENT2])
     def handler2(self, param=None):
         print("handler2 with param: %s" % str(param))
         return None
@@ -55,5 +63,5 @@ class MyClass(CallbackBase):
 
 if __name__ == "__main__":
     a = MyClass()
-    a.run(MyClass.EVENT1, 'mandarina')
-    a.run(MyClass.EVENT2, 'naranja')
+    #a.run(MyClass.EVENT1, 'mandarina')
+    #a.run(MyClass.EVENT2, 'naranja')
