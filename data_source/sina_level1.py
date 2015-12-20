@@ -1,6 +1,12 @@
 #coding=utf-8
 import http.client
+import threading
+import time
 import urllib
+
+class SinaLevel1:
+    def __init__(self):
+        return
 
 def main():
    print('Hello world!')
