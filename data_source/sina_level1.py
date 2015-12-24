@@ -27,7 +27,9 @@ class SinaLevel1(threading.Thread):
         for row in rows:
             row = row[11:]
             bd = bid()
-            bd.code = row[:8]
+
+            bd.code = row[2:8]
+            bd.market = row[0:2]
 
             subrow = row[10:len(row) - 2]
             print(subrow)
