@@ -5,6 +5,7 @@ import time
 import datetime
 import urllib
 import common.bid
+from peewee import *
 
 class SinaLevel1(threading.Thread):
     def __init__(self, monitor_list, interval):
@@ -72,7 +73,7 @@ class SinaLevel1(threading.Thread):
                 #print(items[30] + ' ' + items[31])
                 bd.date_time = datetime.datetime.strptime(items[30] + ' ' + items[31], '%Y-%m-%d %H:%M:%S')
                 print(bd.date_time)
-
+                bd.save()
 
 
     def get_data(self):

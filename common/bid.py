@@ -1,4 +1,7 @@
 from peewee import *
+
+db = SqliteDatabase('bids.db')
+
 class bid(Model):
     code = IntegerField()
     name = CharField()
@@ -32,12 +35,19 @@ class bid(Model):
     date_time     = DateTimeField()
     #time          = TimeField()
 
+    class Meta:
+        database = db
+
+
     def __init__(self):
         return
 
 
 def main():
-
+    db.connect()
+    #db.create_table(bid)
+    bd = bid()
+    bd.save()
     return
 
 if __name__ == '__main__':
