@@ -4,7 +4,7 @@ import threading
 import time
 import datetime
 import urllib
-import common.bid
+from common.bid import *
 from peewee import *
 
 class SinaLevel1(threading.Thread):
@@ -26,7 +26,7 @@ class SinaLevel1(threading.Thread):
         rows = data.split('\n')
         for row in rows:
             row = row[11:]
-            bd = common.bid
+            bd = bid()
             bd.code = row[:8]
 
             subrow = row[10:len(row) - 2]
@@ -96,6 +96,9 @@ class SinaLevel1(threading.Thread):
                 httpClient.close()
 
 def main():
+    db.connect()
+    db.create_table(bid)
+
     monitor_list = ['sz002466']
     #, 'sz002460', 'sz300073', 'sz000558', 'sz300151', 'sz000952', 'sz000004', 'sz002421']
     sinaL1 = SinaLevel1(monitor_list, 2)
