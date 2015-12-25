@@ -1,11 +1,11 @@
 from peewee import *
 from datetime import date
 
-db = SqliteDatabase('bids.db')
+#db = SqliteDatabase('test_bids.db')
 
 class bid(Model):
-    code = IntegerField(primary_key=True)
-    market = CharField(max_length=2)
+    code = IntegerField(default=0)
+    market = CharField(max_length=2,default='')
     name = CharField(default='')
     to_open_price = FloatField(default=0)
     ye_close_price = FloatField(default=0)
@@ -37,15 +37,17 @@ class bid(Model):
     date_time     = DateTimeField(default=date(1980, 10, 24))
     #time          = TimeField()
 
-    class Meta:
-        database = db
+    #class Meta:
+        #database = db
 
 
 def main():
-    db.connect()
-    db.create_table(bid)
-    #bd = bid()
-    #bd.save()
+    db = SqliteDatabase('test_bids.db')
+
+    bid._meta.database = db
+
+    bd = bid(code=3434)
+    bd.save()
     return
 
 if __name__ == '__main__':

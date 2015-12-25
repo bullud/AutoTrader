@@ -12,27 +12,36 @@ class SinaLevel1(threading.Thread):
         threading.Thread.__init__(self)
         self.base_url = 'hq.sinajs.cn'
         self.query = '/list='
-
+        self.interval = interval
+        self.thread_stop = True
         for code in monitor_list:
             self.query += code + ','
 
     def run(self):
-        self.get_data()
+        while self.thread_stop == False:
+            time.sleep(self.interval)
+            self.get_data()
+
+    def start(self):
+        self.thread_stop = False
+        super().start()
 
     def stop(self):
         self.thread_stop = True
 
     def parse_data(self, data):
+        print('begin parse')
         rows = data.split('\n')
         for row in rows:
             row = row[11:]
             bd = bid()
 
             bd.code = row[2:8]
+            #print(bd.code)
             bd.market = row[0:2]
 
             subrow = row[10:len(row) - 2]
-            print(subrow)
+            #print(subrow)
             items = subrow.split(',')
             if len(items) == 33:
                 bd.name = items[0]
@@ -74,9 +83,12 @@ class SinaLevel1(threading.Thread):
 
                 #print(items[30] + ' ' + items[31])
                 bd.date_time = datetime.datetime.strptime(items[30] + ' ' + items[31], '%Y-%m-%d %H:%M:%S')
-                print(bd.date_time)
-                bd.save()
+                #print(bd.date_time)
+                count = bd.save()
+                if count != 1:
+                    print('save failed:' + subrow)
 
+        print('end parse')
 
     def get_data(self):
         httpClient = None
@@ -98,14 +110,13 @@ class SinaLevel1(threading.Thread):
                 httpClient.close()
 
 def main():
-    db.connect()
-    db.create_table(bid)
+    #db.connect()
+    #db.create_table(bid)
 
-    monitor_list = ['sz002466']
-    #, 'sz002460', 'sz300073', 'sz000558', 'sz300151', 'sz000952', 'sz000004', 'sz002421']
+    monitor_list = ['sz002466', 'sz002460', 'sz300073', 'sz000558', 'sz300151', 'sz000952', 'sz000004', 'sz002421']
     sinaL1 = SinaLevel1(monitor_list, 2)
     sinaL1.start()
-    time.sleep(3)
+    time.sleep(20)
     sinaL1.stop()
 
 if __name__ == '__main__':
