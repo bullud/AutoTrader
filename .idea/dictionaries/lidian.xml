@@ -2,6 +2,7 @@
   <dictionary name="lidian">
     <words>
       <w>sina</w>
+      <w>sqlite</w>
     </words>
   </dictionary>
 </component>

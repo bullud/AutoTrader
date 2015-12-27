@@ -4,16 +4,20 @@ import threading
 import time
 import datetime
 import urllib
+
+#from data_process.manager import *
 from common.bid import *
 from peewee import *
 
 class SinaLevel1(threading.Thread):
-    def __init__(self, monitor_list, interval):
+    def __init__(self, monitor_list, interval, manager):
         threading.Thread.__init__(self)
         self.base_url = 'hq.sinajs.cn'
         self.query = '/list='
         self.interval = interval
         self.thread_stop = True
+        self.manager = manager
+
         for code in monitor_list:
             self.query += code + ','
 
@@ -30,6 +34,7 @@ class SinaLevel1(threading.Thread):
         self.thread_stop = True
 
     def parse_data(self, data):
+        bids = []
         print('begin parse')
         rows = data.split('\n')
         for row in rows:
@@ -84,10 +89,20 @@ class SinaLevel1(threading.Thread):
                 #print(items[30] + ' ' + items[31])
                 bd.date_time = datetime.datetime.strptime(items[30] + ' ' + items[31], '%Y-%m-%d %H:%M:%S')
                 #print(bd.date_time)
-                count = bd.save()
-                if count != 1:
-                    print('save failed:' + subrow)
+                #count = bd.save()
+                #if count != 1:
+                #    print('save failed:' + subrow)
 
+            bids.append(bid)
+
+        self.manager.update('sinaL1', bids)
+
+        for bi in bids:
+            c = bi.save()
+            if c != 1:
+                print('save failed')
+
+        print(len(bids))
         print('end parse')
 
     def get_data(self):
@@ -110,6 +125,9 @@ class SinaLevel1(threading.Thread):
                 httpClient.close()
 
 def main():
+    db = SqliteDatabase('test_bids.db')
+
+    bid._meta.database = db
     #db.connect()
     #db.create_table(bid)
 
