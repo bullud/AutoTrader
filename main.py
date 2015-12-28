@@ -1,6 +1,10 @@
 import configparser
 from common.bid import *
 from peewee import *
+import threading
+import time
+
+
 from data_process.manager import *
 
 cf = configparser.ConfigParser()
@@ -43,6 +47,12 @@ source = cf.get('data', 'source')
 Ltype  = cf.get('data', 'Ltype')
 
 processor = manager(cf)
+processor.start()
+
+time.sleep(10)
+processor.stop()
+processor.join()
+
 
 #sinaL1 = SinaLevel1(monitor_list, 2)
 #sinaL1.start()

@@ -4,7 +4,7 @@ from datetime import date
 #db = SqliteDatabase('test_bids.db')
 
 class bid(Model):
-    code = IntegerField(default=0)
+    code = CharField(default='000000')
     market = CharField(max_length=2,default='')
     name = CharField(default='')
     to_open_price = FloatField(default=0)

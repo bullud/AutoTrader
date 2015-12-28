@@ -9,7 +9,7 @@ import urllib
 from common.bid import *
 from peewee import *
 
-class SinaLevel1(threading.Thread):
+class sinaLevel1(threading.Thread):
     def __init__(self, monitor_list, interval, manager):
         threading.Thread.__init__(self)
         self.base_url = 'hq.sinajs.cn'
@@ -41,7 +41,9 @@ class SinaLevel1(threading.Thread):
             row = row[11:]
             bd = bid()
 
+            print(row[2:8])
             bd.code = row[2:8]
+            #print(bd.code)
             #print(bd.code)
             bd.market = row[0:2]
 
@@ -58,6 +60,7 @@ class SinaLevel1(threading.Thread):
                 bd.to_low_price   = float(items[5])
                 #bd.buy_1_price   = items[6]
                 #bd.sell_1_price  = items[7]
+
                 bd.traded_share   = int(items[8])
                 bd.traded_money   = float(items[9])
 
@@ -93,16 +96,17 @@ class SinaLevel1(threading.Thread):
                 #if count != 1:
                 #    print('save failed:' + subrow)
 
-            bids.append(bid)
+            bids.append(bd)
 
         self.manager.update('sinaL1', bids)
 
+        #print(len(bids))
         for bi in bids:
             c = bi.save()
             if c != 1:
                 print('save failed')
 
-        print(len(bids))
+
         print('end parse')
 
     def get_data(self):
@@ -132,9 +136,9 @@ def main():
     #db.create_table(bid)
 
     monitor_list = ['sz002466', 'sz002460', 'sz300073', 'sz000558', 'sz300151', 'sz000952', 'sz000004', 'sz002421']
-    sinaL1 = SinaLevel1(monitor_list, 2)
+    sinaL1 = sinaLevel1(monitor_list, 2, None)
     sinaL1.start()
-    time.sleep(20)
+    time.sleep(2)
     sinaL1.stop()
 
 if __name__ == '__main__':
