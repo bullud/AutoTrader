@@ -42,7 +42,6 @@ class manager(threading.Thread):
         super().start()
         self.datasource.start()
 
-
         return
 
     def run(self):
