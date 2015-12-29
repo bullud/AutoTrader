@@ -30,8 +30,11 @@ class sinaLevel1(threading.Thread):
 
         for code in monitor_list:
             result = bid.select().where(bid.code == code).order_by(bid.date_time.desc()).limit(1)
-            print(result[0].date_time)
-            self.monitor[code] = result[0].date_time
+            if len(result) == 0:
+                self.monitor[code] = ''
+            else:
+                #print(result[0].date_time)
+                self.monitor[code] = result[0].date_time.strftime('%Y-%m-%d %H:%M:%S')
 
     def run(self):
         while self.thread_stop == False:
@@ -60,8 +63,6 @@ class sinaLevel1(threading.Thread):
 
             #print(row[0:8])
             bd.code = row[0:8]
-            # print(bd.code)
-            # print(bd.code)
             bd.market = row[0:2]
 
             subrow = row[10:len(row) - 2]
@@ -75,7 +76,6 @@ class sinaLevel1(threading.Thread):
                 continue
 
             self.monitor[bd.code] = timestr
-
 
             bd.date_time = datetime.datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S')
 
