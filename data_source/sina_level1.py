@@ -24,10 +24,6 @@ class sinaLevel1(threading.Thread):
         self.szIndexCode = 'sz399001'
         self.cyIndexCode = 'sz399006'
 
-        self.szUTime = ''
-        self.shUTime = ''
-        self.shIUTime = ''
-        self.szIUTime = ''
         self.monitor = dict()
         for code in monitor_list:
             self.query += code + ','
@@ -76,29 +72,6 @@ class sinaLevel1(threading.Thread):
 
             self.monitor[bd.code] = timestr
 
-            '''if bd.market == 'sz':
-                if bd.code == self.szIndexCode or bd.code == self.cyIndexCode:
-                    if timestr == self.szIUTime:
-                        continue
-
-                    self.szIUTime = timestr
-                else:
-                    if timestr == self.szUTime:
-                        continue
-
-                    self.szUTime = timestr
-            else:
-                if bd.code == self.shIndexCode:
-                    if timestr == self.shIUTime:
-                        continue
-
-                    self.shIUTime = timestr
-                else:
-                    if timestr == self.shUTime:
-                        continue
-
-                    self.shUTime = timestr
-            '''
 
             bd.date_time = datetime.datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S')
 
@@ -152,21 +125,6 @@ class sinaLevel1(threading.Thread):
             if c != 1:
                 print('save failed')
 
-        '''if timestr != '':
-            if bd.market == 'sz':
-                if bd.code == self.szIndexCode or bd.code == self.cyIndexCode:
-                    self.szIUTime = timestr
-                else:
-                    self.szUTime = timestr
-            else:
-                if bd.code == self.shIndexCode:
-                    self.shIUTime = timestr
-                else:
-                    self.shUTime = timestr
-
-            print('update time:', timestr)
-
-        '''
 
         #print('end parse')
 
@@ -196,6 +154,10 @@ def main():
     #db.connect()
     #db.create_table(bid)
 
+    result = bid.select().where(bid.code == 'sh000001').order_by(bid.date_time.desc()).limit(1)
+    print(result[0].date_time)
+
+    return
     monitor_list = ['sh000001', 'sz399001', 'sz399006', 'sh600526', 'sh600000', 'sz002466', 'sz002460', 'sz300073', 'sz000558', 'sz300151', 'sz000952', 'sz000004', 'sz002421']
     sinaL1 = sinaLevel1(monitor_list, 2, None)
     sinaL1.start()
