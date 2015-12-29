@@ -3,7 +3,7 @@ from common.bid import *
 from peewee import *
 import threading
 import time
-
+import msvcrt
 
 from data_process.manager import *
 
@@ -49,7 +49,8 @@ Ltype  = cf.get('data', 'Ltype')
 processor = manager(cf)
 processor.start()
 
-time.sleep(10)
+#time.sleep(60)
+ch = msvcrt.getch()
 processor.stop()
 processor.join()
 

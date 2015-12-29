@@ -10,20 +10,25 @@ class manager(threading.Thread):
         self.jobqueue = queue.Queue(maxsize = 10)
         self.config = config
 
+        dbtype = self.config.get('db', 'type')
+        bidfile = self.config.get('db', 'bidfile')
+
+        bid._meta.database = SqliteDatabase(bidfile)
+
         codefile = self.config.get('data', 'codefile')
         allcodes = open(codefile).read()
         codes = allcodes.split('\n')
-        print('codes:', codes)
+        #print('codes:', codes)
 
         self.datasource =  sinaLevel1(codes, 2, self)
 
         return
 
     def update(self, sourcename, bids):
-        for bi in bids:
-            print(bi.code)
-
-        #self.jobqueue.put(bids)
+        #for bi in bids:
+        #    print(bi.code)
+        #print('put in queue')
+        self.jobqueue.put(bids)
 
         return
 
@@ -44,9 +49,11 @@ class manager(threading.Thread):
         while self.thread_stop == False:
             if self.jobqueue.empty() == False:
                 bd = self.jobqueue.get()
-                print(bd)
+                print('deal bid:', len(bd))
+
+
             else:
-                time.sleep(10)
+                time.sleep(0.01)
         return
 
 

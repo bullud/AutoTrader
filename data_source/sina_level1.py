@@ -7,7 +7,9 @@ import urllib
 
 #from data_process.manager import *
 from common.bid import *
+from common.index import *
 from peewee import *
+
 
 class sinaLevel1(threading.Thread):
     def __init__(self, monitor_list, interval, manager):
@@ -18,8 +20,18 @@ class sinaLevel1(threading.Thread):
         self.thread_stop = True
         self.manager = manager
 
+        self.shIndexCode = 'sh000001'
+        self.szIndexCode = 'sz399001'
+        self.cyIndexCode = 'sz399006'
+
+        self.szUTime = ''
+        self.shUTime = ''
+        self.shIUTime = ''
+        self.szIUTime = ''
+        self.monitor = dict()
         for code in monitor_list:
             self.query += code + ','
+            self.monitor[code] = ''
 
     def run(self):
         while self.thread_stop == False:
@@ -35,79 +47,128 @@ class sinaLevel1(threading.Thread):
 
     def parse_data(self, data):
         bids = []
-        print('begin parse')
+        #print('begin parse')
         rows = data.split('\n')
+        timestr = ''
         for row in rows:
+            pos = row.find('=')
+            if pos != 19:
+                continue
+
             row = row[11:]
             bd = bid()
 
-            print(row[2:8])
-            bd.code = row[2:8]
-            #print(bd.code)
-            #print(bd.code)
+            #print(row[0:8])
+            bd.code = row[0:8]
+            # print(bd.code)
+            # print(bd.code)
             bd.market = row[0:2]
 
             subrow = row[10:len(row) - 2]
             #print(subrow)
+
             items = subrow.split(',')
-            if len(items) == 33:
-                bd.name = items[0]
 
-                bd.to_open_price  = float(items[1])
-                bd.ye_close_price = float(items[2])
-                bd.cur_price      = float(items[3])
-                bd.to_high_price  = float(items[4])
-                bd.to_low_price   = float(items[5])
-                #bd.buy_1_price   = items[6]
-                #bd.sell_1_price  = items[7]
+            timestr = items[30] + ' ' + items[31]
 
-                bd.traded_share   = int(items[8])
-                bd.traded_money   = float(items[9])
+            if timestr == self.monitor[bd.code]:
+                continue
 
-                bd.buy1_count     = int(items[10])
-                bd.buy1_price     = float(items[11])
-                bd.sell1_count    = int(items[20])
-                bd.sell1_price    = float(items[21])
+            self.monitor[bd.code] = timestr
 
-                bd.buy2_count     = int(items[12])
-                bd.buy2_price     = float(items[13])
-                bd.sell2_count    = int(items[22])
-                bd.sell2_price    = float(items[23])
+            '''if bd.market == 'sz':
+                if bd.code == self.szIndexCode or bd.code == self.cyIndexCode:
+                    if timestr == self.szIUTime:
+                        continue
 
-                bd.buy3_count     = int(items[14])
-                bd.buy3_price     = float(items[15])
-                bd.sell3_count    = int(items[24])
-                bd.sell3_price    = float(items[25])
+                    self.szIUTime = timestr
+                else:
+                    if timestr == self.szUTime:
+                        continue
 
-                bd.buy4_count     = int(items[16])
-                bd.buy4_price     = float(items[17])
-                bd.sell4_count    = int(items[26])
-                bd.sell4_price    = float(items[27])
+                    self.szUTime = timestr
+            else:
+                if bd.code == self.shIndexCode:
+                    if timestr == self.shIUTime:
+                        continue
 
-                bd.buy5_count     = int(items[18])
-                bd.buy5_price     = float(items[19])
-                bd.sell5_count    = int(items[28])
-                bd.sell5_price    = float(items[29])
+                    self.shIUTime = timestr
+                else:
+                    if timestr == self.shUTime:
+                        continue
 
-                #print(items[30] + ' ' + items[31])
-                bd.date_time = datetime.datetime.strptime(items[30] + ' ' + items[31], '%Y-%m-%d %H:%M:%S')
-                #print(bd.date_time)
-                #count = bd.save()
-                #if count != 1:
-                #    print('save failed:' + subrow)
+                    self.shUTime = timestr
+            '''
+
+            bd.date_time = datetime.datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S')
+
+            bd.name = items[0]
+
+            bd.to_open_price = float(items[1])
+            bd.ye_close_price = float(items[2])
+            bd.cur_price = float(items[3])
+            bd.to_high_price = float(items[4])
+            bd.to_low_price = float(items[5])
+            # bd.buy_1_price   = items[6]
+            # bd.sell_1_price  = items[7]
+
+            bd.traded_share = int(items[8])
+            bd.traded_money = float(items[9])
+            bd.buy1_count = int(items[10])
+            bd.buy1_price = float(items[11])
+            bd.sell1_count = int(items[20])
+            bd.sell1_price = float(items[21])
+
+            bd.buy2_count = int(items[12])
+            bd.buy2_price = float(items[13])
+            bd.sell2_count = int(items[22])
+            bd.sell2_price = float(items[23])
+
+            bd.buy3_count = int(items[14])
+            bd.buy3_price = float(items[15])
+            bd.sell3_count = int(items[24])
+            bd.sell3_price = float(items[25])
+
+            bd.buy4_count = int(items[16])
+            bd.buy4_price = float(items[17])
+            bd.sell4_count = int(items[26])
+            bd.sell4_price = float(items[27])
+
+            bd.buy5_count = int(items[18])
+            bd.buy5_price = float(items[19])
+            bd.sell5_count = int(items[28])
+            bd.sell5_price = float(items[29])
 
             bids.append(bd)
 
-        self.manager.update('sinaL1', bids)
+
+        if self.manager != None and len(bids) != 0:
+            self.manager.update('sinaL1', bids)
 
         #print(len(bids))
         for bi in bids:
+            #print('save bids')
             c = bi.save()
             if c != 1:
                 print('save failed')
 
+        '''if timestr != '':
+            if bd.market == 'sz':
+                if bd.code == self.szIndexCode or bd.code == self.cyIndexCode:
+                    self.szIUTime = timestr
+                else:
+                    self.szUTime = timestr
+            else:
+                if bd.code == self.shIndexCode:
+                    self.shIUTime = timestr
+                else:
+                    self.shUTime = timestr
 
-        print('end parse')
+            print('update time:', timestr)
+
+        '''
+
+        #print('end parse')
 
     def get_data(self):
         httpClient = None
@@ -129,13 +190,13 @@ class sinaLevel1(threading.Thread):
                 httpClient.close()
 
 def main():
-    db = SqliteDatabase('test_bids.db')
+    db = SqliteDatabase('G:\\work\\stockdata\\bid.db')
 
     bid._meta.database = db
     #db.connect()
     #db.create_table(bid)
 
-    monitor_list = ['sz002466', 'sz002460', 'sz300073', 'sz000558', 'sz300151', 'sz000952', 'sz000004', 'sz002421']
+    monitor_list = ['sh000001', 'sz399001', 'sz399006', 'sh600526', 'sh600000', 'sz002466', 'sz002460', 'sz300073', 'sz000558', 'sz300151', 'sz000952', 'sz000004', 'sz002421']
     sinaL1 = sinaLevel1(monitor_list, 2, None)
     sinaL1.start()
     time.sleep(2)
