@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="3658905988">
+  <component name="DataSourceManagerImpl" format="xml" hash="4211077799">
     <data-source source="LOCAL" name="Sqlite (Xerial) - bids.db" uuid="074cabc2-a1cf-4998-85e0-74b28db933be">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
@@ -62,6 +62,12 @@
       <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/bid.db</jdbc-url>
     </data-source>
     <data-source source="LOCAL" name="Sqlite (Xerial) - bid.db [2]" uuid="e12d8165-ce47-44d3-a4bc-433ae4c9e50b">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/bid.db</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="Sqlite (Xerial) - bid.db [3]" uuid="a4f3482b-9926-4741-9888-e828001e5e81">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
