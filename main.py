@@ -50,7 +50,12 @@ processor = manager(cf)
 processor.start()
 
 #time.sleep(60)
-ch = msvcrt.getch()
+print('press q to exist')
+ch = ''
+while ch != b'q':
+    ch = msvcrt.getch()
+    #print(ch)
+
 processor.stop()
 processor.join()
 
