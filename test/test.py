@@ -1,6 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+for line in open('../codes.txt'):
+    print(line)
+
+
+#print(open('../codes.txt'))
+exit()
+
 N = 5
 menMeans = (20, 35, 30, 35, 27)
 menStd =   (2, 3, 4, 1, 2)
