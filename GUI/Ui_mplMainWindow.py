@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'mplMainWindow.ui'
+# Form implementation generated from reading ui file 'MplMainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -8,10 +8,13 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Ui_Dialog(object):
+from GUI.mplCanvasWrapper import MplCanvasWrapper
+
+
+class Ui_Dialog(QtWidgets.QMainWindow):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(639, 447)
+        Dialog.resize(492, 408)
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
         self.buttonBox.setGeometry(QtCore.QRect(140, 374, 341, 32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -30,4 +33,4 @@ class Ui_Dialog(object):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
 
-from mplcanvaswrapper import MplCanvasWrapper
+
