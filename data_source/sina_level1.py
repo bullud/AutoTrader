@@ -62,7 +62,7 @@ class sinaLevel1(threading.Thread):
             bd = bid()
 
             #print(row[0:8])
-            bd.code = row[0:8]
+            bd.code = row[2:8]
             # print(bd.code)
             # print(bd.code)
             bd.market = row[0:2]

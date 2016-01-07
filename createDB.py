@@ -20,3 +20,6 @@ if day.table_exists() == False:
     day.create_table()
     #dailydb.connect()
     #dailydb.create_table(day)
+else:
+    day.drop_table()
+    day.create_table()

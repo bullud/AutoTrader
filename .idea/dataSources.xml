@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="4211077799">
+  <component name="DataSourceManagerImpl" format="xml" hash="1500617153">
     <data-source source="LOCAL" name="Sqlite (Xerial) - bids.db" uuid="074cabc2-a1cf-4998-85e0-74b28db933be">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
@@ -68,6 +68,24 @@
       <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/bid.db</jdbc-url>
     </data-source>
     <data-source source="LOCAL" name="Sqlite (Xerial) - bid.db [3]" uuid="a4f3482b-9926-4741-9888-e828001e5e81">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/bid.db</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="Sqlite (Xerial) - daily.db" uuid="31fc7b7b-9d72-4bc2-9b14-281f5ccd24b6">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/daily.db</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="Sqlite (Xerial) - daily.db [2]" uuid="d475c493-aa2b-4bdb-9b0e-c7416d9054c6">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/daily.db</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="Sqlite (Xerial) - bid.db [4]" uuid="ae276490-165c-40ae-89c4-635e867db3e7">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
