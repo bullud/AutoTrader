@@ -1,6 +1,8 @@
 import threading
 import queue
 import time
+import threadpool
+
 from data_source.sina_level1 import *
 
 class manager(threading.Thread):
@@ -21,6 +23,7 @@ class manager(threading.Thread):
         #print('codes:', codes)
 
         self.datasource =  sinaLevel1(codes, 2, self)
+        self.pool = threadpool.ThreadPool(5)
 
         return
 
