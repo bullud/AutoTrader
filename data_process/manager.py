@@ -5,6 +5,9 @@ import threadpool
 
 from data_source.sina_level1 import *
 
+def store_bids():
+    return
+
 class manager(threading.Thread):
     def __init__(self, config):
         threading.Thread.__init__(self)
