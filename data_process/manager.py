@@ -5,6 +5,8 @@ import threadpool
 from data_process.OneMinuteProc import *
 from data_process.RealTimeProc import *
 from data_source.sina_level1 import *
+from common.oneMinute import *
+
 
 class wrapper:
     def __init__(self, args = None, objs = None):
@@ -40,8 +42,13 @@ class manager(threading.Thread):
 
         dbtype = self.config.get('db', 'type')
         bidfile = self.config.get('db', 'bidfile')
-
         bid._meta.database = SqliteDatabase(bidfile)
+
+        m1file = self.config.get('db', '1minfile')
+        oneMinute._meta.database = SqliteDatabase(m1file)
+
+        m5file = self.config.get('db', '5minfile')
+        m15file = self.config.get('db', '15minfile')
 
         codefile = self.config.get('data', 'codefile')
         allcodes = open(codefile).read()
