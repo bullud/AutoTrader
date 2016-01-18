@@ -7,7 +7,6 @@ import urllib
 
 #from data_process.manager import *
 from common.bid import *
-from common.index import *
 from peewee import *
 
 
@@ -27,6 +26,7 @@ class sinaLevel1(threading.Thread):
         self.monitor = dict()
         for code in monitor_list:
             self.query += code + ','
+            #print(self.query)
 
         for code in monitor_list:
             result = bid.select().where(bid.code == code).order_by(bid.date_time.desc()).limit(1)
@@ -51,21 +51,29 @@ class sinaLevel1(threading.Thread):
     def parse_data(self, data):
         bids = []
         #print('begin parse')
+        #print('raw data=' + data)
         rows = data.split('\n')
+        #print(len(rows))
         timestr = ''
         for row in rows:
+            #print('row = ' + row)
+
             pos = row.find('=')
+            #print('pos=' + str(pos))
             if pos != 19:
+                #print('continue')
                 continue
+
 
             row = row[11:]
             bd = bid()
 
             #print(row[0:8])
-            bd.code = row[2:8]
-            # print(bd.code)
-            # print(bd.code)
+            bd.code = row[0:8]
+            #print(bd.code)
+
             bd.market = row[0:2]
+            #print(bd.market)
 
             subrow = row[10:len(row) - 2]
             #print(subrow)
@@ -74,7 +82,13 @@ class sinaLevel1(threading.Thread):
 
             timestr = items[30] + ' ' + items[31]
 
-            if timestr == self.monitor[bd.code]:
+            #print('timestr=' + timestr)
+
+            #print(self.monitor[bd.code])
+
+
+            if bd.code in self.monitor and timestr == self.monitor[bd.code]:
+                #print('continue 2')
                 continue
 
             self.monitor[bd.code] = timestr
@@ -126,12 +140,12 @@ class sinaLevel1(threading.Thread):
             self.manager.update('sinaL1', bids)
 
         #print(len(bids))
-        for bi in bids:
+        '''for bi in bids:
             #print('save bids')
             c = bi.save()
             if c != 1:
                 print('save failed')
-
+        '''
 
         #print('end parse')
 
