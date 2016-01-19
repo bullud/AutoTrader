@@ -21,9 +21,9 @@ def store_bids(bidswp):
         if c != 1:
             print('save failed')
 
-def store_1Minute(oneMinutes):
-    for om in oneMinutes:
-        om.save()
+def store_1Minute(wp):
+    #for om in oneMinutes:
+    #    om.save()
     return
 
 def store_5Minute(fiveMinutes):
@@ -96,13 +96,15 @@ class manager(threading.Thread):
                 bidStoreRequest = threadpool.WorkRequest(store_bids, bdargs)
                 self.storePool.putRequest(bidStoreRequest)
 
-                omargs = []
-                omargs.append(wrapper(bds, self.realTimeP))
-                omProcRequest = threadpool.WorkRequest(dorealtimeProc, omargs)
-                self.calcPool.putRequest(omProcRequest)
+                m1args = []
+                m1args.append(wrapper(bds, self.realTimeP))
+                m1ProcRequest = threadpool.WorkRequest(dorealtimeProc, m1args)
+                self.calcPool.putRequest(m1ProcRequest)
                 self.calcPool.wait()
 
-
+                m1Sags = []
+                m1Sags.append(wrapper(None, self.realTimeP))
+                m1SProcRequest = threadpool.WorkRequest(dorealtimeProc, m1Sags)
 
                 self.storePool.wait()
 
