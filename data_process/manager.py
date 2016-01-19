@@ -15,6 +15,7 @@ class wrapper:
 
 
 def store_bids(bidswp):
+    print('store bids')
     for bd in bidswp._args:
         c = bd.save()
         if c != 1:
@@ -28,10 +29,11 @@ def store_1Minute(oneMinutes):
 def store_5Minute(fiveMinutes):
     return
 
-def realtimeProc(wp):
+def dorealtimeProc(wp):
     bids = wp._args
     objs = wp._objs
     objs.proc(bids)
+    return
 
 class manager(threading.Thread):
     def __init__(self, config):
@@ -59,7 +61,7 @@ class manager(threading.Thread):
         self.storePool = threadpool.ThreadPool(3)
         self.calcPool = threadpool.ThreadPool(2)
 
-        self.oneMinuteP = oneMinuteProc(self)
+        self.realTimeP = realtimeProc(codes, self)
 
         return
 
@@ -95,8 +97,8 @@ class manager(threading.Thread):
                 self.storePool.putRequest(bidStoreRequest)
 
                 omargs = []
-                omargs.append(wrapper(bds, self.oneMinuteP))
-                omProcRequest = threadpool.WorkRequest(realtimeProc, omargs)
+                omargs.append(wrapper(bds, self.realTimeP))
+                omProcRequest = threadpool.WorkRequest(dorealtimeProc, omargs)
                 self.calcPool.putRequest(omProcRequest)
                 self.calcPool.wait()
 

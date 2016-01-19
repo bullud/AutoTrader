@@ -10,3 +10,5 @@ class oneMinute(Model):
     traded_share = IntegerField(default=0)
     traded_money = IntegerField(default=0)
     minuteT      = DateTimeField(default=date(1980, 10, 24))
+    begBDT        = DateTimeField(default=date(1980, 10, 24))
+    endBDT        = DateTimeField(default=date(1980, 10, 24))
