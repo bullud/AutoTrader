@@ -45,10 +45,22 @@ class realtimeProc:
     def proc(self, bds):
         print('proc:' + str(len(bds)))
         for bd in bds:
+            tpd = self._tpDatas[bd.code]
+            if tpd._m1.code == '000000':
+                tpd._m1.code = bd.code
+                tpd._m1.open_price   = bd.cur_price
+                tpd._m1.close_price  = bd.cur_price
+                tpd._m1.high_price   = bd.cur_price
+                tpd._m1.low_price    = bd.cur_price
+                tpd._m1.traded_share = bd.traded_share
+                tpd._m1.traded_money = bd.traded_money
+                tpd._m1.minuteT      = bd.date_time.minute
+                tpd._m1.begBDT       =
+                tpd._m1.endBDT       =
 
-            if bd.date_time - bdL[0].date_time > datetime.timedelta(seconds = 60):
+            #if bd.date_time - bdL[0].date_time > datetime.timedelta(seconds = 60):
 
-            else:
-                bdL = self._bids[bd.code]
-                bdL.append(bd)
+            #else:
+            #    bdL = self._bids[bd.code]
+            #    bdL.append(bd)
 
