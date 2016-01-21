@@ -84,4 +84,7 @@ class realtimeProc:
                 tpd._m1.traded_money = bd.traded_money - tpd._last_traded_money
                 tpd._m1.endBDT       = bd.date_time
 
+    def storeM1(self):
+        for k in self._tpDatas.keys():
+            tpd = self._tpDatas[k]
 

@@ -21,12 +21,14 @@ def store_bids(bidswp):
         if c != 1:
             print('save failed')
 
-def store_1Minute(wp):
+def store_m1s(wp):
+    objs = wp._objs
+    objs.storeM1()
     #for om in oneMinutes:
     #    om.save()
     return
 
-def store_5Minute(fiveMinutes):
+def store_m5s(fiveMinutes):
     return
 
 def dorealtimeProc(wp):
@@ -104,7 +106,8 @@ class manager(threading.Thread):
 
                 m1Sags = []
                 m1Sags.append(wrapper(None, self.realTimeP))
-                m1SProcRequest = threadpool.WorkRequest(dorealtimeProc, m1Sags)
+                m1SProcRequest = threadpool.WorkRequest(store_m1s, m1Sags)
+                self.storePool.putRequest(m1SProcRequest)
 
                 self.storePool.wait()
 
