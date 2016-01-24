@@ -36,21 +36,22 @@ for parent, dirnames, filenames in os.walk(rootdir):
         del stock['BuySell']
 
 
-        stock.columns = ['Time', 'HighPrice', 'Volume']
+
         stock.insert(0, 'Date', pd.to_datetime(parts[0]))
         stock.insert(0, 'Code', parts[1])
-        stock.insert(3, 'LowPrice', stock['HighPrice'])
+        stock.insert(3, 'LowPrice', stock['Price'])
 
-        stock['Acount'] = stock.LowPrice.astype(float) * stock.Volume.astype(float)
-        print(stock.head())
+        stock['Acount']= stock.LowPrice.astype(float) * stock.Volume.astype(float)
+
         TTime = pd.to_timedelta(stock['Time'])
         #stock['Time'] = TTime
         #TTime = pd.to_timedelta(TTime.dt.seconds - (TTime.dt.seconds % 60))
         f = lambda x: datetime.timedelta(seconds = (x.item() - x.item() %60000000000)/1000000000)
 
-        stock.insert(1,'TimeIndex', TTime.map(f))
+        stock.insert(2,'TimeIndex', TTime.map(f))
 
-        #print(stock)
+        stock.columns = ['Code', 'Date', 'TimeIndex', 'Time', 'LowPrice', 'HighPrice', 'Volume', 'Acount']
+        #print(stock.head())
         stocks.append(stock)
 
         i += 1
@@ -71,3 +72,4 @@ group = grouped.agg({'LowPrice':'min', \
                      'Acount':'sum'})
 
 print(group)
+group.to_csv('G:\\BaiduYunDownload\\zhubi-2015-05-19\\2015-05-19_stock_m1.csv')
