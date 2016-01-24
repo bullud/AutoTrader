@@ -14,7 +14,14 @@ df = pd.read_sql(sql, con)
 print(df)
 '''
 
+def _high_price(g):
+    gf = g.astype(float)
+    return gf.idxmin() <= gf.idxmax() and np.max(gf) or (-np.max(gf))
+
+
 rootdir = "G:\\BaiduYunDownload\\zhubi-2015-05-19\\data\\"
+
+
 
 stocks = []
 i = 0
@@ -25,13 +32,21 @@ for parent, dirnames, filenames in os.walk(rootdir):
         (shotname, extension) = os.path.splitext(filename)
         parts = shotname.split(' ')
 
-        stock=pd.read_csv(os.path.join(parent,filename), parse_dates=[1])
+        stock=pd.read_csv(os.path.join(parent,filename), parse_dates=[1], converters={'Price':float})
+        del stock['BuySell']
+
+
+        stock.columns = ['Time', 'HighPrice', 'Volume']
         stock.insert(0, 'Date', pd.to_datetime(parts[0]))
         stock.insert(0, 'Code', parts[1])
+        stock.insert(3, 'LowPrice', stock['HighPrice'])
+
+        stock['Acount'] = stock.LowPrice.astype(float) * stock.Volume.astype(float)
+        print(stock.head())
         TTime = pd.to_timedelta(stock['Time'])
         #stock['Time'] = TTime
         #TTime = pd.to_timedelta(TTime.dt.seconds - (TTime.dt.seconds % 60))
-        f = lambda x: str(datetime.timedelta(seconds = (x.item() - x.item() %60000000000)/1000000000))
+        f = lambda x: datetime.timedelta(seconds = (x.item() - x.item() %60000000000)/1000000000)
 
         stock.insert(1,'TimeIndex', TTime.map(f))
 
@@ -39,24 +54,20 @@ for parent, dirnames, filenames in os.walk(rootdir):
         stocks.append(stock)
 
         i += 1
-        if i == 2:
+        if i == 1:
             break
 
 stock_data = pd.concat(stocks)
+#print(stock_data.head(10))
+#stock_data.to_csv('G:\\BaiduYunDownload\\zhubi-2015-05-19\\2015-05-19_stocks.csv')
 
-stock_data.to_csv('G:\\BaiduYunDownload\\zhubi-2015-05-19\\2015-05-19_stocks.csv')
+grouped = stock_data.groupby(['Code', 'Date', 'TimeIndex'])
 
-print(stock_data.head(1))
-#f = lambda x: datetime.timedelta(seconds = (x.item() - x.item() %60000000000)/1000000000)
+print(grouped)
 
+group = grouped.agg({'LowPrice':'min', \
+                     'HighPrice': _high_price, \
+                     'Volume':'sum', \
+                     'Acount':'sum'})
 
-#stock_data.insert(1,'TimeIndex', stock_data['Time'].map(f))
-#print(stock_data.head(5))
-
-
-#key = lambda x: x.minute
-#grouped = stock_data.groupby(['Code', 'Date', 'TimeIndex'])
-
-
-#print(grouped.head(1))
-
+print(group)
