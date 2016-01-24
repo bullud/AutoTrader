@@ -87,4 +87,5 @@ class realtimeProc:
     def storeM1(self):
         for k in self._tpDatas.keys():
             tpd = self._tpDatas[k]
+            #tpd
 
