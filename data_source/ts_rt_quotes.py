@@ -15,7 +15,7 @@ class tsQuotes(threading.Thread):
         self.interval = interval
         self.thread_stop = True
         self.manager = manager
-        self.query = '['
+        self.query = []
 
         self.shIndexCode = 'sh000001'
         self.szIndexCode = 'sz399001'
@@ -27,15 +27,14 @@ class tsQuotes(threading.Thread):
                 continue
 
             if code == 'sh000001':
-                self.query += "'sh'" + ','
+                self.query.append('sh')
             elif code == 'sz399001':
-                self.query += "'sz'" + ','
+                self.query.append('sz')
             elif code == 'sz399006':
-                self.query += "'cyb'" + ','
+                self.query.append('cyb')
             else:
-                self.query += "'" + code[2:] + "'" + ','
+                self.query.append(code[2:])
 
-        self.query += ']'
 
         for code in monitor_list:
             result = bid.select().where(bid.code == code).order_by(bid.date_time.desc()).limit(1)
@@ -66,7 +65,7 @@ class tsQuotes(threading.Thread):
             print(self.query)
             query = "'sh','sz'"
             print(query)
-            df = ts.get_realtime_quotes([query])
+            df = ts.get_realtime_quotes(self.query)
             self.parse_data(df)
 
         except Exception as e:
