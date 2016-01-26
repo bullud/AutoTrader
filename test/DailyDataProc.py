@@ -24,6 +24,7 @@ def main():
     print(df.head())
 
     pd.io.sql.write_frame(df, 'day', con)
+    
     con.close()
     #print('press q to exist')
     #ch = ''
