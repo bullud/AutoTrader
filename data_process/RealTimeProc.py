@@ -3,6 +3,7 @@ from common.bid import *
 from peewee import *
 import datetime
 import copy
+import pandas as pd
 
 class tmpBDData:
     def __init__(self, bids):
@@ -12,11 +13,14 @@ class tmpBDData:
         self._last_traded_money = 0
         self._newM1 = False
 
+
 class realtimeProc:
     def __init__(self, monitor_list, manager):
+        print('realtimeProc init')
         self._manager = manager
         self._m1s = dict()
         self._tpDatas = dict()
+        self._bids = pd.DataFrame()
 
         yesterday = datetime.date.today() - datetime.timedelta(1)
         #datetime.datetime.strptime(str(yesterday), '%Y-%m-%d')
@@ -50,6 +54,8 @@ class realtimeProc:
     def proc(self, bds):
         print('proc:' + str(len(bds)))
         for bd in bds:
+
+            '''
             tpd = self._tpDatas[bd.code]
             if tpd._m1.code == '000000' or (bd.date_time - tpd._m1.minuteT) > datetime.timedelta(seconds = 60):
                 if tpd._m1.code != '000000':
@@ -83,9 +89,11 @@ class realtimeProc:
                 tpd._m1.traded_share = bd.traded_share - tpd._last_traded_share
                 tpd._m1.traded_money = bd.traded_money - tpd._last_traded_money
                 tpd._m1.endBDT       = bd.date_time
+            '''
 
     def storeM1(self):
-        for k in self._tpDatas.keys():
-            tpd = self._tpDatas[k]
+        #for k in self._tpDatas.keys():
+        #    tpd = self._tpDatas[k]
             #tpd
+        return
 

@@ -57,7 +57,11 @@ class tsQuotes(threading.Thread):
         self.thread_stop = True
 
     def parse_data(self, data):
-        #print(data.head())
+        print(len(data))
+        if len(data) != len(self.monitor):
+            print('some code get tick data failed')
+
+         
         return
 
     def get_data(self):
