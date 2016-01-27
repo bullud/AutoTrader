@@ -8,7 +8,7 @@ import datetime
 import numpy as np
 import tushare as ts
 import msvcrt
-
+import math
 
 def main():
     con = sqlite3.connect('basics.sqlite')
@@ -20,24 +20,54 @@ def main():
 
     con.close()
 
-    #print(dfb.index)
-    for i in dfb.index:
-        dateS = dfb.ix[i]['timeToMarket'].astype(str)
+    con = sqlite3.connect('day.sqlite')
+    for code in dfb.index:
+
+        print(code)
+        dateS = dfb.ix[code]['timeToMarket'].astype(str)
         if dateS == '0':
-            print('not time for code:' + i )
+            print('not time for code:' + code )
             continue
 
         date = datetime.datetime.strptime(dateS, "%Y%m%d").date()
 
         dayCount = (datetime.datetime.today().date() - date).days + 1
 
-        #for oneDate in [date + datetime.timedelta(years = n) for n in range(yearCount)]:
+        round =  math.floor(dayCount / 365) + 1
 
-        #dfi = ts.get_h_data(i)
+        dfis = []
+        #print("ttmTime:" + str(date))
+        for oneDate in [date + datetime.timedelta(days = n * 365) for n in range(round)]:
+            print(oneDate)
+            it = 0
+            while(True):
+                try:
+                    dfi = ts.get_h_data(code, start = str(oneDate), end = str(oneDate + datetime.timedelta(days = 364)))
+                    if len(dfi) != 0:
+                        dfis.append(dfi)
+                    break
+                except Exception as e:
+                    print(e)
 
-    #con = sqlite3.connect('day.sqlite')
-    #df = ts.get_today_all()
-    #print(len(dfa))
+                it += 1
+                if it == 3:
+                    print('try 3 time for code:' + code + ' ' + str(oneDate))
+                    break
+                continue
+
+        if len(dfis) == 0:
+            continue
+
+        dfi_all = pd.concat(dfis)
+        dfi_all.insert(0, 'code', code)
+        dfi_all['index'] = 0
+        dfi_all.sort_index(ascending = True, inplace = True)
+        print(dfi_all.head())
+        dfi_all.to_sql('days', con, if_exists = 'append')
+
+
+    con.close()
+
     return
 
     con = sqlite3.connect('day.sqlite')
