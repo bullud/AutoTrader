@@ -43,7 +43,7 @@ def main():
             while(True):
                 try:
                     dfi = ts.get_h_data(code, start = str(oneDate), end = str(oneDate + datetime.timedelta(days = 364)))
-                    if len(dfi) != 0:
+                    if dfi is not None:
                         dfis.append(dfi)
                     break
                 except Exception as e:
