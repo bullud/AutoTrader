@@ -20,7 +20,12 @@ def main():
     codes = codeandtime.index
     print(type(codes))
 
+    skip = 0
     for code in codes:
+        skip += 1
+        if skip < 4:
+            continue
+
         dbpath = 'ticks/' + code + '_ticks.sqlite'
         con = sqlite3.connect(dbpath)
 
@@ -46,9 +51,15 @@ def main():
                     tickdf = ts.get_tick_data(code, date=oneDay)
                     if tickdf is not None and len(tickdf) > 5:
                         tickdf.insert(0, 'date', oneDay)
-                        tickdf.sort_index(ascending = True, inplace = True)
-                        ticks.append(tickdf)
+                        tickdf.sort_values(by = 'time', ascending = True, inplace = True)
                         print(tickdf.head())
+
+                        ticks.append(tickdf)
+
+                        if len(ticks) >= 100:
+                            ticks_df = pd.concat(ticks)
+                            ticks_df.to_sql('ticks', con, if_exists = 'append')
+                            ticks = []
 
                     break
                 except Exception as e:
@@ -58,11 +69,13 @@ def main():
                 if it == 3:
                     print('try 3 time for code:' + code + ' ' + str(oneDay))
                     break
+
+                print('try more time ' + str(it))
                 continue
 
-        ticks_df = pd.concat(ticks)
-
-        #ticks.insert(0, 'code')
+        if len(ticks) != 0:
+            ticks_df = pd.concat(ticks)
+            ticks_df.to_sql('ticks', con, if_exists = 'append')
 
         con.close()
 
