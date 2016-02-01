@@ -23,7 +23,7 @@ def main():
     skip = 0
     for code in codes:
         skip += 1
-        if skip < 4:
+        if skip < 1000:
             continue
 
         dbpath = 'ticks/' + code + '_ticks.sqlite'
