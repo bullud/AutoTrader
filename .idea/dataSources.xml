@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="4161649836">
+  <component name="DataSourceManagerImpl" format="xml" hash="2187602584">
     <data-source source="LOCAL" name="Sqlite (Xerial) - bids.db" uuid="074cabc2-a1cf-4998-85e0-74b28db933be">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
@@ -132,6 +132,12 @@
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/test/m1s\002536_m1.db</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="Sqlite (Xerial) - 002537_ticks.sqlite" uuid="8a619b6f-857d-4b41-b87f-4e26c401930f">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/test/ticks\002537_ticks.sqlite</jdbc-url>
     </data-source>
   </component>
 </project>

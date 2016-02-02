@@ -42,21 +42,26 @@ for parent, dirnames, filenames in os.walk(rootdir):
         print(m1s)
         sqltime = ''
         if m1s is not None:
-            sqltime = 'WHERE date > ' + str(m1s['date'][0])
+            sqltime = "WHERE date > '" + str(m1s['date'][0]) + "'"
 
         print(sqltime)
 
         con = sqlite3.connect(os.path.join(parent,filename))
         sql = "SELECT * from ticks " + sqltime
+
+        print(sql)
         ticks = pd.read_sql(sql, con)
         con.close()
 
-        if ticks is None:
+        if ticks is None or len(ticks) == 0:
             continue
 
+        print(len(ticks))
+        print(ticks)
         #t = ticks['time']
         #print(type(t[0]))
 
+        break
 
         del ticks['index']
         del ticks['type']
