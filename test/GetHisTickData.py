@@ -22,22 +22,33 @@ def main():
 
     skip = 0
     for code in codes:
-        skip += 1
-        if skip < 1000:
-            continue
+        #skip += 1
+        #if skip < 1000:
+        #    continue
 
         dbpath = 'ticks/' + code + '_ticks.sqlite'
         con = sqlite3.connect(dbpath)
 
         print(dbpath)
 
-        dateS = codeandtime.ix[code]['timeToMarket'].astype(str)
-        if dateS == '0':
-            print('not time for code:' + code )
-            con.close()
-            continue
+        date = None
+        sql = "SELECT date from ticks ORDER by date DESC LIMIT 1"
 
-        date = datetime.datetime.strptime(dateS, "%Y%m%d").date()
+        lastticks = pd.read_sql(sql, con)
+
+        if lastticks is None or len(lastticks) == 0:
+            dateS = codeandtime.ix[code]['timeToMarket'].astype(str)
+            if dateS == '0':
+                print('not time for code:' + code )
+                con.close()
+                continue
+
+            date = datetime.datetime.strptime(dateS, "%Y%m%d").date()
+        else:
+            #print(str(lastticks['date'][0] + datetime.timedelta(1)))
+            date = datetime.datetime.strptime(lastticks["date"][0], "%Y-%m-%d").date()  + datetime.timedelta(1)
+            print("start date:" + str(date))
+        #break
 
         dayCount = (datetime.datetime.today().date() - date).days + 1
 

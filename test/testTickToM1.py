@@ -36,10 +36,10 @@ for parent, dirnames, filenames in os.walk(rootdir):
             continue
 
         con2 = sqlite3.connect(os.path.join(m1rootdir, parts[0] + '_m1.db'))
-        sql = "SELECT DISTINCT date from m1 ORDER BY date DESC LIMIT 1"
+        sql = "SELECT date from m1 ORDER BY date DESC LIMIT 1"
         m1s = pd.read_sql(sql, con2)
         con2.close()
-        print(m1s)
+
         sqltime = ''
         if m1s is not None:
             sqltime = "WHERE date > '" + str(m1s['date'][0]) + "'"
