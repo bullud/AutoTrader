@@ -45,11 +45,14 @@ for parent, dirnames, filenames in os.walk(rootdir):
             sqltime = 'WHERE date > ' + str(m1s['date'][0])
 
         print(sqltime)
-        break
+
         con = sqlite3.connect(os.path.join(parent,filename))
         sql = "SELECT * from ticks " + sqltime
         ticks = pd.read_sql(sql, con)
         con.close()
+
+        if ticks is None:
+            continue
 
         #t = ticks['time']
         #print(type(t[0]))
