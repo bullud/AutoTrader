@@ -35,8 +35,19 @@ for parent, dirnames, filenames in os.walk(rootdir):
         if parts[0] == '002536':
             continue
 
+        con2 = sqlite3.connect(os.path.join(m1rootdir, parts[0] + '_m1.db'))
+        sql = "SELECT DISTINCT date from m1 ORDER BY date DESC LIMIT 1"
+        m1s = pd.read_sql(sql, con2)
+        con2.close()
+        print(m1s)
+        sqltime = ''
+        if m1s is not None:
+            sqltime = 'WHERE date > ' + str(m1s['date'][0])
+
+        print(sqltime)
+        break
         con = sqlite3.connect(os.path.join(parent,filename))
-        sql = "SELECT * from ticks"
+        sql = "SELECT * from ticks " + sqltime
         ticks = pd.read_sql(sql, con)
         con.close()
 
@@ -92,7 +103,7 @@ for parent, dirnames, filenames in os.walk(rootdir):
 
 
         con2 = sqlite3.connect(os.path.join(m1rootdir, parts[0] + '_m1.db'))
-        group.to_sql('m1', con2, if_exists = 'replace', index = False)
+        group.to_sql('m1', con2, if_exists = 'append', index = False)
         con2.close()
         i += 1
         if i == 350:
