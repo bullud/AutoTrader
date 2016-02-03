@@ -6,16 +6,22 @@ from peewee import *
 import sqlite3
 import datetime
 import numpy as np
+'''
+con = sqlite3.connect('bids.db')
+sql = 'SELECT * from bid'
 
+df = pd.read_sql(sql, con)
+print(df)
+'''
 
 def _high_price(g):
     gf = g.astype(float)
     return gf.idxmin() <= gf.idxmax() and np.max(gf) or (-np.max(gf))
 
 
-rootdir = "G:\\work\\sourcecode\\AutoTrader\\test\\ticks"
+rootdir = "E:\\work\\AutoTrader\\AutoTrader\\test\\ticks"
 
-m1rootdir = "G:\\work\\sourcecode\\AutoTrader\\test\\m1s"
+m5rootdir = "E:\\work\\AutoTrader\\AutoTrader\\test\\m5s"
 
 stocks = []
 i = 0
@@ -27,24 +33,27 @@ for parent, dirnames, filenames in os.walk(rootdir):
         parts = shotname.split('_')
         print(parts)
 
+        #sql = "select name from sqlite_master where type = 'table' order by name"
+        #c = sqlite3.Connection('xx.db').cursor()
+        #print c.execute(sql).fetchall()
 
-        m51 = None
-        dbpath = os.path.join(m1rootdir, parts[0] + '_m1.db')
+        m5s = None
+        dbpath = os.path.join(m5rootdir, parts[0] + '_m5.db')
         if os.path.exists(dbpath) == True:
             con2 = sqlite3.connect(dbpath)
-            sql = "SELECT date from m1 ORDER BY date DESC LIMIT 1"
+            sql = "SELECT date from m5 ORDER BY date DESC LIMIT 1"
             try:
-                m1s = pd.read_sql(sql, con2)
+                m5s = pd.read_sql(sql, con2)
             except Exception as e:
                 print(e)
             finally:
                 con2.close()
 
         sqltime = ''
-        if m1s is not None:
-            sqltime = "WHERE date > '" + str(m1s['date'][0]) + "'"
+        if m5s is not None:
+            sqltime = "WHERE date > '" + str(m5s['date'][0]) + "'"
 
-        print(sqltime)
+        #print(sqltime)
 
         con = sqlite3.connect(os.path.join(parent,filename))
         sql = "SELECT * from ticks " + sqltime
@@ -57,11 +66,9 @@ for parent, dirnames, filenames in os.walk(rootdir):
             continue
 
         print(len(ticks))
-        print(ticks)
+        #print(ticks)
         #t = ticks['time']
         #print(type(t[0]))
-
-        break
 
         del ticks['index']
         del ticks['type']
@@ -78,8 +85,8 @@ for parent, dirnames, filenames in os.walk(rootdir):
         TTime = pd.to_timedelta(ticks['time'])
         #stock['Time'] = TTime
         #TTime = pd.to_timedelta(TTime.dt.seconds - (TTime.dt.seconds % 60))
-        f = lambda x: datetime.timedelta(seconds = (x.item() - x.item() %60000000000)/1000000000)
-        f2 = lambda x: str(datetime.timedelta(seconds = (x.item() - x.item() %60000000000)/1000000000))
+        f = lambda x: datetime.timedelta(seconds = (x.item() - x.item() %300000000000)/1000000000)
+        f2 = lambda x: str(datetime.timedelta(seconds = (x.item() - x.item() %300000000000)/1000000000))
 
         ticks.insert(2, 'timeIndex', TTime.map(f))
         ticks.insert(3, 'timeIndex2', TTime.map(f2))
@@ -107,12 +114,15 @@ for parent, dirnames, filenames in os.walk(rootdir):
         del group['timeIndex2']
 
         print(group.head())
-        print(os.path.join(m1rootdir, parts[0] + '_m1.db'))
+        print(os.path.join(m5rootdir, parts[0] + '_m5.db'))
 
 
-        con2 = sqlite3.connect(os.path.join(m1rootdir, parts[0] + '_m1.db'))
-        group.to_sql('m1', con2, if_exists = 'append', index = False)
+        con2 = sqlite3.connect(os.path.join(m5rootdir, parts[0] + '_m5.db'))
+        #group.to_sql('m5', con2, if_exists = 'append', index = False)
         con2.close()
+
+        break
+
         i += 1
         if i == 350:
             break
