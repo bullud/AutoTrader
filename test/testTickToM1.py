@@ -28,7 +28,7 @@ for parent, dirnames, filenames in os.walk(rootdir):
         print(parts)
 
 
-        m51 = None
+        m1s = None
         dbpath = os.path.join(m1rootdir, parts[0] + '_m1.db')
         if os.path.exists(dbpath) == True:
             con2 = sqlite3.connect(dbpath)

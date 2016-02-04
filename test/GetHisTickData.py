@@ -32,9 +32,14 @@ def main():
         print(dbpath)
 
         date = None
+        lastticks = None
         sql = "SELECT date from ticks ORDER by date DESC LIMIT 1"
-
-        lastticks = pd.read_sql(sql, con)
+        try:
+            lastticks = pd.read_sql(sql, con)
+        except Exception as e:
+                print(e)
+        finally:
+            con.close()
 
         if lastticks is None or len(lastticks) == 0:
             dateS = codeandtime.ix[code]['timeToMarket'].astype(str)
