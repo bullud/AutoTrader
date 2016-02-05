@@ -23,10 +23,12 @@ def main():
     skip = 0
     for code in codes:
         #skip += 1
-        #if skip < 1000:
+        #if skip < 800:
         #    continue
+        if code != '002466' and code != '002456':
+            continue
 
-        dbpath = 'ticks/' + code + '_ticks.sqlite'
+        dbpath = 'ticks2/' + code + '_ticks.sqlite'
         con = sqlite3.connect(dbpath)
 
         print(dbpath)
@@ -38,8 +40,8 @@ def main():
             lastticks = pd.read_sql(sql, con)
         except Exception as e:
                 print(e)
-        finally:
-            con.close()
+        #finally:
+        #    con.close()
 
         if lastticks is None or len(lastticks) == 0:
             dateS = codeandtime.ix[code]['timeToMarket'].astype(str)
