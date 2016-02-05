@@ -19,25 +19,25 @@ def usage():
 
 def main(argv):
     try:
-        options, args= getopt.getopt(argv[1:], "hm:p:t:", ["help", "mtype=", "mpath=", "tpath="])
+        options, args= getopt.getopt(argv[1:], "hd:p:t:", ["help", "dtype=", "dpath=", "tpath="])
     except getopt.GetoptError as e:
         print('end')
         sys.exit()
 
-    mt = 0
-    mrootdir = ''
+    drootdir = ''
     trootdir = ''
     for name, value in options:
         print(value)
         if name in ('-h', '--help'):
             usage()
-        if name in ('-m', '--mtype'):
+        if name in ('-d', '--dtype'):
             mt = int(value)
-        if name in ('-p', '--mpath'):
-            mrootdir = value
+        if name in ('-p', '--dpath'):
+            drootdir = value
         if name in ('-t', '--tpath'):
             trootdir = value
 
+    filter = ['002456', '002466']
 
     stocks = []
     i = 0
@@ -48,7 +48,7 @@ def main(argv):
             (shotname, extension) = os.path.splitext(filename)
             parts = shotname.split('_')
             print(parts)
-            if parts[0] != '002536':
+            if parts[0] not in filter:
                 continue
 
             #sql = "select name from sqlite_master where type = 'table' order by name"
@@ -56,7 +56,7 @@ def main(argv):
             #print c.execute(sql).fetchall()
 
             mxs = None
-            dbpath = os.path.join(mrootdir, parts[0] + '_m' + str(mt) + '.db')
+            dbpath = os.path.join(mrootdir, parts[0] + '_d.db')
             if os.path.exists(dbpath) == True:
                 con2 = sqlite3.connect(dbpath)
 

@@ -25,6 +25,8 @@ logger = logging.getLogger('tst')    # 获取名为tst的logger
 logger.addHandler(handler)           # 为logger添加handler
 logger.setLevel(logging.DEBUG)
 
+
+
 def main():
     con = sqlite3.connect('basics.sqlite')
 
