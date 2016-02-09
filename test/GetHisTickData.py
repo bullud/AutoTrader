@@ -28,7 +28,7 @@ def main():
         if code != '002466' and code != '002456':
             continue
 
-        dbpath = 'ticks2/' + code + '_ticks.sqlite'
+        dbpath = 'ticks/' + code + '_ticks.sqlite'
         con = sqlite3.connect(dbpath)
 
         print(dbpath)
@@ -39,7 +39,7 @@ def main():
         try:
             lastticks = pd.read_sql(sql, con)
         except Exception as e:
-                print(e)
+            print(e)
         #finally:
         #    con.close()
 
@@ -70,13 +70,13 @@ def main():
                     if tickdf is not None and len(tickdf) > 5:
                         tickdf.insert(0, 'date', oneDay)
                         tickdf.sort_values(by = 'time', ascending = True, inplace = True)
-                        print(tickdf.head())
+                        #print(tickdf.head())
 
                         ticks.append(tickdf)
 
                         if len(ticks) >= 100:
                             ticks_df = pd.concat(ticks)
-                            ticks_df.to_sql('ticks', con, if_exists = 'append')
+                            ticks_df.to_sql('ticks', con, if_exists = 'append', index = False)
                             ticks = []
 
                     break
@@ -93,7 +93,7 @@ def main():
 
         if len(ticks) != 0:
             ticks_df = pd.concat(ticks)
-            ticks_df.to_sql('ticks', con, if_exists = 'append')
+            ticks_df.to_sql('ticks', con, if_exists = 'append', index = False)
 
         con.close()
 
