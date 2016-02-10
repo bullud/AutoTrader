@@ -15,6 +15,17 @@ _const.limitDate = '1997-12-31'
 
 def getLastDay(con, code):
     lastDay = None
+    sql = "SELECT date from limits where code = '" + code + "' ORDER by date DESC LIMIT 1"
+
+    try:
+        lastDay = pd.read_sql(sql, con)
+    except Exception as e:
+        print(e)
+
+    if lastDay is not None and len(lastDay) != 0:
+        lastDay = datetime.datetime.strptime(lastDay["date"][0], "%Y-%m-%d").date()
+    else:
+        lastDay = None
 
     return lastDay
 
@@ -35,8 +46,8 @@ def main(argv):
 
     lcon = sqlite3.connect(limitdbpath)
     for code in codes:
-        if code != '002466':
-            continue
+        #if code != '002466':
+        #    continue
 
         date = None
         lastDay = getLastDay(lcon, code)
@@ -54,6 +65,9 @@ def main(argv):
         ddf['lclose'] = ddf['close'].shift()
         ddf.drop(0, axis = 0, inplace= True)
 
+        if len(ddf) == 0:
+            continue
+
         uf = lambda x:round(x * 1.1 + 0.00001, 2)
         df = lambda x:round(x * 0.9 + 0.00001, 2)
         ddf['ulimit'] = ddf['lclose'].apply(uf)
@@ -63,14 +77,15 @@ def main(argv):
 
         f = lambda x:x['close'] == x['ulimit'] and 1 \
                      or (x['close'] == x['dlimit'] and -1 \
-                     or (x['close'] - x['lclose'])*2/(x['ulimit'] - x['dlimit']))
+                     or round((x['close'] - x['lclose'])*2/(x['ulimit'] - x['dlimit']), 4))
+
         ddf['limit'] = ddf.apply(f, axis = 1)
 
 
-        print(ddf[ ddf['limit'] == 1])
-        #print(ddf)
-        #print(ddf.tail())
-        break
+        print(ddf[ ddf['limit'] == -1])
+
+        ddf.to_sql('limits', lcon, if_exists = 'append', index= False)
+
 
     lcon.close()
     dcon.close()
