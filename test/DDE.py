@@ -15,6 +15,10 @@ _const.small = 50000
 _const.middle = 200000
 _const.large = 1000000
 
+def time2Str(x):
+    #0 days 13:22:00.000000000
+    return x[7:15]
+
 def getTime(x):
     d = datetime.datetime.strptime(x, "%H%M%S")
     t = datetime.timedelta(hours = d.hour, minutes = d.minute, seconds = d.second)
@@ -25,66 +29,78 @@ def getM(t):
     f  = lambda x: datetime.timedelta(seconds = (x.item() - x.item() % step )/1000000000)
     return f
 
-def setType(x):
+def setSize(x):
     return abs(x) <= _const.small and 1 or (abs(x) <= _const.middle and 2 or (abs(x) <= _const.large and 3 or 4))
 
 def main(argv):
     dirpath = 'E:\\BaiduYunDownload\\level2\\2016\\201602\\20160205\\'
-    files = ['SZ002466']
+    codes = ['SZ002466']
     DDEpath = 'E:\\BaiduYunDownload\\DDE'
 
-    for file in files:
-        filepath = dirpath + file + '.csv'
+    date = pd.to_datetime('20160205')
+    for code in codes:
+        filepath = dirpath + code + '.csv'
         print(filepath)
         stock = pd.read_csv(filepath, header=None, names=['time', 'price', 'bs', 'volumn'],\
-                            converters={'time':str} )
-        #print(stock.head())
+                            converters={'time':str})
 
         f = lambda x: datetime.datetime.strptime(x, "%H%M%S")
         stock['time'] = stock['time'].apply(getTime)
 
-        getM1 = getM(t = 1)
-        stock['timeM1'] = stock['time'].apply(getM1)
-
         f = lambda x: x=='B' and 1 or -1
         stock['bs'] = stock['bs'].apply(f)
 
+        stock['volumnN'] = stock['volumn'] * stock['bs']
         stock['amount'] = stock['volumn'] * stock['price']
         stock['amountN'] = stock['amount']* stock['bs']
 
-        stock['type'] = stock['amount'].apply(setType)
+        stock['size'] = stock['amount'].apply(setSize)
 
-        #stock['amount'] = ddf.apply(f, axis = 1)
-        grouped = stock.groupby(['timeM1'], as_index=True)
-        group = grouped.agg({'amount':'sum', 'amountN':'sum'})
-        #print(group.tail(96))
+        getM1 = getM(t = 1)
+        stock['timeIndex'] = stock['time'].apply(getM1)
 
-        grouped = stock.groupby(['timeM1', 'type'], as_index=True)
-        group2 = grouped.agg({'amount':'sum', 'amountN':'sum'})#.reset_index()
-        #print(group2.index)
-        #re = group2.reindex( level='type', columns= group2.columns, fill_value=0)
-        #print(re)
-        #group2.set_index('time')
-        t4 = group2.query('type == 4').reset_index()
-        del t4['type']
-        t4.set_index('timeM1', inplace = True)
+        grouped = stock.groupby(['timeIndex'], as_index=True)
+        group = grouped.agg({'volumn':'sum', 'volumnN':'sum', 'amount':'sum', 'amountN':'sum'})
 
-        t4.columns = ['amountT4', 'amountNT4']
-
-        t = t4.reindex(group.index, fill_value = 0)
-        group['amountT4'] = t['amountT4']
-        group['amountNT4'] = t['amountNT4']
-        print(group)
-        #t = t4 + group
-        #print(t)
-        #group['amountT1'] = group2[group2.type == 1]['amount']
-        #group['amountT2'] = group2[group2.type == 2]
-        #group['amountT3'] = group2[group2.type == 3]
-        #group['amountT4'] = group2[group2.type == 4]
+        grouped = stock.groupby(['timeIndex', 'size'], as_index=True)
+        group2 = grouped.agg({'volumn':'sum', 'volumnN':'sum', 'amount':'sum', 'amountN':'sum'})#.reset_index()
 
 
-        #print(group.tail(96))
-        #print(stock[stock['type'] == 2])
+        for i in range(4, 0, -1):
+            ti = group2.query('size == ' + str(i)).reset_index()
+            del ti['size']
+            ti.set_index('timeIndex', inplace = True)
+            volumnTi = 'volumnT' + str(i)
+            volumnNTi = 'volumnNT' + str(i)
+            amountTi = 'amountT' + str(i)
+            amountNTi = 'amountNT' + str(i)
+
+            t = ti.reindex(group.index, fill_value = 0)
+
+            group.insert(0, amountNTi, t['amountN'])
+            group.insert(0, amountTi, t['amount'])
+            group.insert(0, volumnNTi, t['volumnN'])
+            group.insert(0, volumnTi, t['volumn'])
+
+        group.insert(0, 'amountN', group.pop('amountN'))
+        group.insert(0, 'amount', group.pop('amount'))
+        group.insert(0, 'volumnN', group.pop('volumnN'))
+        group.insert(0, 'volumn', group.pop('volumn'))
+
+        group.reset_index(inplace = True)
+
+        group['timeIndex'] = group['timeIndex'] + date
+        #group['timeIndex'] = group['timeIndex'].astype(str).apply(time2Str)
+        #group['date'] = date
+        #group.insert(0, 'date', group.pop('date'))
+
+        print(group.head(96))
+
+        DDE_M1_dbpath = os.path.join(DDEpath, 'M1\\' +  code + '_DDE_M1.db')
+        con = sqlite3.connect(DDE_M1_dbpath)
+        group.to_sql('DDEs', con, if_exists = 'replace', index = False)
+        con.close()
+
 
 if __name__ == '__main__':
     main(sys.argv)
