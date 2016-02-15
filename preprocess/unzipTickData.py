@@ -17,6 +17,27 @@ def getTime(x):
     t = datetime.timedelta(hours = d.hour, minutes = d.minute, seconds = d.second)
     return t
 
+def getLastEntry(con):
+    return None
+
+    lastentry = None
+    lastentries = None
+
+    sql = "SELECT date from trans ORDER by date DESC LIMIT 1"
+
+    try:
+        lastentries = pd.read_sql(sql, con)
+    except Exception as e:
+        print(e)
+    #print(lastdays)
+
+    if lastentries is not None and len(lastentries) != 0:
+        lastentry = datetime.datetime.strptime(lastentries["date"][0], "%Y-%m-%d %H:%M:%S")#.date()
+    else:
+        lastentry = None
+
+    return lastentry
+
 def extractData(zipfile, dst):
     print(zipfile, dst)
     d = datetime.datetime.strptime(zipfile[0:8], '%Y%m%d')
@@ -26,39 +47,49 @@ def extractData(zipfile, dst):
     day = d.day
     print(year, month, day)
 
-
     for parent, dirnames, filenames in os.walk(dst):
         for filename in filenames:
             code = filename[2:8]
+            #print('code=' + code)
 
             sqlitefile = os.path.join(_const.level2_sqlite, code + '.db')
             con = sqlite3.connect(sqlitefile)
+            lastEntry = getLastEntry(con)
+
+            #print('lastEntry=' + str(lastEntry))
+
+            if lastEntry is not None and lastEntry.date() > d.date():
+                con.close()
+                continue
 
             csvfile = os.path.join(parent, filename)
-            print(code)
+
+            print(csvfile)
             transactions = pd.read_csv(csvfile, header=None, names=['time', 'price', 'bs', 'volumn'],\
                             converters={'time':str})
 
             transactions['date'] = d + transactions['time'].apply(getTime)
             del transactions['time']
             transactions.set_index('date', inplace=True)
-            print(transactions.head())
+
+            if lastEntry is not None:
+                trans = transactions.query('date  > "' + str(lastEntry) + '"')
+                trans.to_sql('trans', con, if_exists = 'append', index = True)
+            else:
+                transactions.to_sql('trans', con, if_exists = 'append', index = True)
+
             con.close()
-            #print(transactions)
-            return
+
 
 def main(argv):
     rarcmd = '"C:\\Program Files\\WinRAR\\unRar.exe" x '
     z7cmd = '"D:\\Program Files\\7-Zip\\7z.exe" x '
-    for parent, dirnames, filenames in os.walk('E:\\BaiduYunDownload\\level2\\2016'):
+    for parent, dirnames, filenames in os.walk('E:\\BaiduYunDownload\\level2\\'):
         for filename in filenames:
             file = os.path.join(parent,filename)
 
             ext = os.path.splitext(filename)[1][1:].lower()
             dst = parent + "\\temp"
-
-            if os.path.exists(dst) == False:
-                os.makedirs(dst)
 
             if ext in ['7z', 'rar']:
                 cmd = z7cmd + file + " -y -o" + dst
@@ -73,6 +104,9 @@ def main(argv):
                 rmcmd = "rd/s/q " + dst
             '''
 
+            if os.path.exists(dst) == False:
+                os.makedirs(dst)
+
             print(cmd)
             if os.system(cmd) == 0:
                 #print("unrar success")
@@ -82,10 +116,10 @@ def main(argv):
                     print('del temp success')
                 else:
                     print('failed')
-                return
+
             else:
                 print('unrar failed')
-                return
+
 
 if __name__ == '__main__':
     main(sys.argv)

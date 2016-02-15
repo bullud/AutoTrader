@@ -1,12 +1,22 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import tushare as ts
+import pandas as pd
+import datetime
 
-df = ts.get_h_data('600656', start = '1990-12-19', end = '1990-12-21')
+def getTime(x):
+    print(x)
+    d = datetime.datetime.strptime(x, "%H%M%S")
+    t = datetime.timedelta(hours = d.hour, minutes = d.minute, seconds = d.second)
+    return t
 
+csvfile = 'E:\\BaiduYunDownload\\level2\\2010\\201009\\temp\\20100927\\SZ000680.csv'
 
-print(len(df))
-print(df)
+print(csvfile)
+transactions = pd.read_csv(csvfile, header=None, names=['time', 'price', 'bs', 'volumn'],\
+                            converters={'time':str})
+
+print(transactions['time'].apply(getTime))
 
 exit(0)
 
