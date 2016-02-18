@@ -11,6 +11,9 @@ import math
 
 from utils import _const
 
+_const.DDEPath='G:\\DDE'
+_const.Level2Path='G:\\level2_sqlite\\'
+
 _const.small = 50000
 _const.middle = 200000
 _const.large = 1000000
@@ -27,24 +30,40 @@ def getTime(x):
 def getM(t):
     step = t*60000000000
     f  = lambda x: datetime.timedelta(seconds = (x.item() - x.item() % step )/1000000000)
-    return f
+    return f,
 
 def setSize(x):
     return abs(x) <= _const.small and 1 or (abs(x) <= _const.middle and 2 or (abs(x) <= _const.large and 3 or 4))
 
+def getLastDay(code):
+    return
+
+def getL2Data()
+
 def main(argv):
-    dirpath = 'E:\\BaiduYunDownload\\level2\\2016\\201602\\20160205\\'
+    #dirpath = 'G:\\level2_sqlite\\'
+    #DDEpath = 'G:\\DDE'
+
     codes = ['SZ002466']
-    DDEpath = 'E:\\BaiduYunDownload\\DDE'
 
     date = pd.to_datetime('20160205')
-    for code in codes:
-        filepath = dirpath + code + '.csv'
-        print(filepath)
-        stock = pd.read_csv(filepath, header=None, names=['time', 'price', 'bs', 'volumn'],\
-                            converters={'time':str})
+    #for code in codes:
 
-        f = lambda x: datetime.datetime.strptime(x, "%H%M%S")
+    for parent, dirnames, filenames in os.walk(_const.Level2Path):
+        for filename in filenames:
+            code = filename[0:8]
+            print(code)
+
+            L2filepath = os.path.join(parent, filename)
+            print(L2filepath)
+
+            lastDay = getLastDay(code)
+
+            #stock = pd.read_csv(filepath, header=None, names=['time', 'price', 'bs', 'volumn'],\
+            #                    converters={'time':str})
+            stock = getL2Data(L2filepath, lastDay)
+
+            f = lambda x: datetime.datetime.strptime(x, "%H%M%S")
         stock['time'] = stock['time'].apply(getTime)
 
         f = lambda x: x=='B' and 1 or -1
