@@ -48,7 +48,7 @@ def main(argv):
             (shotname, extension) = os.path.splitext(filename)
             parts = shotname.split('_')
             print(parts)
-            if parts[0] != '002536':
+            if parts[0] != '002466' and parts[0] != '002456':
                 continue
 
             #sql = "select name from sqlite_master where type = 'table' order by name"
@@ -148,7 +148,7 @@ def main(argv):
             group.to_sql('m'+ str(mt), con2, if_exists = 'append', index = False)
             con2.close()
 
-            break
+            #break
 
             i += 1
             if i == 350:
