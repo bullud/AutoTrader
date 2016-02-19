@@ -12,8 +12,8 @@ import numpy as np
 import threadpool
 from utils import _const
 
-_const.level2_sqlite = 'G:\\level2_sqlite_12'
-_const.multiThread = True
+_const.level2_sqlite = 'F:\\level2_sqlite_2014'
+_const.multiThread = False
 
 Pool = threadpool.ThreadPool(1)
 
@@ -28,7 +28,7 @@ def getTime(x):
     return t
 
 def getLastEntry(con, table):
-    return None
+    return
 
     lastentry = None
     lastentries = None
@@ -66,6 +66,11 @@ def extractData(zipfile, dst):
 
     for parent, dirnames, filenames in os.walk(dst):
         for filename in filenames:
+            ext = os.path.splitext(filename)[1][1:].lower()
+            #print(ext)
+            if ext != 'csv':
+                continue
+
             code = filename[2:8]
 
             #not necessary for mysql
@@ -79,6 +84,7 @@ def extractData(zipfile, dst):
             if lastEntry is not None and lastEntry.date() > d.date():
                 con.close()
                 continue
+
 
             csvfile = os.path.join(parent, filename)
 
@@ -120,7 +126,7 @@ def extractData(zipfile, dst):
 def main(argv):
     rarcmd = '"C:\\Program Files\\WinRAR\\unRar.exe" x '
     z7cmd = '"D:\\Program Files\\7-Zip\\7z.exe" x '
-    for parent, dirnames, filenames in os.walk('G:\\level2\\2012'):
+    for parent, dirnames, filenames in os.walk('G:\\level2\\2014\\'):
         for filename in filenames:
             file = os.path.join(parent,filename)
 
@@ -152,9 +158,11 @@ def main(argv):
                     print('del temp success')
                 else:
                     print('failed')
+                    return
 
             else:
                 print('unrar failed')
+                return
 
 
 if __name__ == '__main__':

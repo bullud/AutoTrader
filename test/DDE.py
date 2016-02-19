@@ -38,7 +38,7 @@ def setSize(x):
 def getLastDay(code):
     return
 
-def getL2Data()
+def getL2Data(L2filepath, beginDay)
 
 def main(argv):
     #dirpath = 'G:\\level2_sqlite\\'
@@ -61,7 +61,7 @@ def main(argv):
 
             #stock = pd.read_csv(filepath, header=None, names=['time', 'price', 'bs', 'volumn'],\
             #                    converters={'time':str})
-            stock = getL2Data(L2filepath, lastDay)
+            stock = getL2Data(L2filepath, lastDay + datetime.timedelta(1))
 
             f = lambda x: datetime.datetime.strptime(x, "%H%M%S")
         stock['time'] = stock['time'].apply(getTime)
