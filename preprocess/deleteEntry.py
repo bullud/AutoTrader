@@ -22,13 +22,18 @@ for parent, dirnames, filenames in os.walk(_const.level2_sqlite):
         sqlitefile = os.path.join(parent, filename)
 
         con = sqlite3.connect(sqlitefile)
+        cursor = con.cursor()
         print(sqlitefile)
         for day in _const.deleteDays:
             d = datetime.datetime.strptime(day, "%Y%m%d")
             #print(d)
             sql = 'DELETE from trans where date >= "' + str(d) + '" and date < "' + str(d + datetime.timedelta(1)) +'"'
             print(sql)
-            con.execute(sql)
+            cursor.execute(sql)
+            con.commit()
+
+            print(cursor.rowcount)
+            cursor.close()
 
 
         con.close()

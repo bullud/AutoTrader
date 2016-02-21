@@ -63,13 +63,20 @@ def extractData(zipfile, dst):
     print(year, month, day)
 
     #con=MySQLdb.connect(host='localhost', db='trans', user='lidian', passwd='123@321ld')
-
+    begin = False
     for parent, dirnames, filenames in os.walk(dst):
         for filename in filenames:
             ext = os.path.splitext(filename)[1][1:].lower()
             #print(ext)
             if ext != 'csv':
                 continue
+
+            if filename == 'SZ002597.csv':
+                begin = True
+
+            if begin == False:
+                continue
+
 
             code = filename[2:8]
 
@@ -131,7 +138,7 @@ def main(argv):
             file = os.path.join(parent,filename)
 
             ext = os.path.splitext(filename)[1][1:].lower()
-            dst = parent + "\\temp"
+            dst = parent + "\\temp1"
 
             if ext in ['7z', 'rar']:
                 cmd = z7cmd + file + " -y -o" + dst
