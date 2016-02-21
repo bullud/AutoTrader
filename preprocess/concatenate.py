@@ -39,7 +39,7 @@ for dir in dirs:
             distfile = os.path.join(dst, code + '.db')
             cond = sqlite3.connect(distfile)
             curd = cond.cursor()
-            curd.execute('create table trans(date TIMESTAMP, price REAL, bs TEXT, volumn INTEGER )')
+            curd.execute('create table if not exists trans(date TIMESTAMP, price REAL, bs TEXT, volumn INTEGER )')
             cond.commit()
 
             sqld = 'INSERT into trans(date, price, bs, volumn) values(?, ?, ?, ?)'
