@@ -38,32 +38,23 @@ def setSize(x):
 def getLastDay(code):
     return
 
-def getL2Data(L2filepath, beginDay)
+def getL2Data(L2filepath, beginDay):
+    data = None
+    return data
 
 def main(argv):
-    #dirpath = 'G:\\level2_sqlite\\'
-    #DDEpath = 'G:\\DDE'
+    dirpath = 'G:\\level2_test\\'
+    DDEpath = 'G:\\DDE'
 
     codes = ['SZ002466']
 
     date = pd.to_datetime('20160205')
-    #for code in codes:
+    for code in codes:
+        filepath = dirpath + code + '.csv'
 
-    for parent, dirnames, filenames in os.walk(_const.Level2Path):
-        for filename in filenames:
-            code = filename[0:8]
-            print(code)
-
-            L2filepath = os.path.join(parent, filename)
-            print(L2filepath)
-
-            lastDay = getLastDay(code)
-
-            #stock = pd.read_csv(filepath, header=None, names=['time', 'price', 'bs', 'volumn'],\
-            #                    converters={'time':str})
-            stock = getL2Data(L2filepath, lastDay + datetime.timedelta(1))
-
-            f = lambda x: datetime.datetime.strptime(x, "%H%M%S")
+        stock = pd.read_csv(filepath, header=None, names=['time', 'price', 'bs', 'volumn'],\
+                            converters={'time':str})
+        f = lambda x: datetime.datetime.strptime(x, "%H%M%S")
         stock['time'] = stock['time'].apply(getTime)
 
         f = lambda x: x=='B' and 1 or -1
@@ -72,11 +63,18 @@ def main(argv):
         stock['volumnN'] = stock['volumn'] * stock['bs']
         stock['amount'] = stock['volumn'] * stock['price']
         stock['amountN'] = stock['amount']* stock['bs']
-
         stock['size'] = stock['amount'].apply(setSize)
 
+        print(stock.head())
         getM1 = getM(t = 1)
-        stock['timeIndex'] = stock['time'].apply(getM1)
+
+        t = 1
+        step = t*60000000000
+        f  = lambda x: datetime.timedelta(seconds = (x.item() - x.item() % step )/1000000000)
+
+        stock['timeIndex'] = stock['time'].apply(f)
+        print(stock.head())
+
 
         grouped = stock.groupby(['timeIndex'], as_index=True)
         group = grouped.agg({'volumn':'sum', 'volumnN':'sum', 'amount':'sum', 'amountN':'sum'})
@@ -115,7 +113,7 @@ def main(argv):
 
         print(group.head(96))
 
-        DDE_M1_dbpath = os.path.join(DDEpath, 'M1\\' +  code + '_DDE_M1.db')
+        DDE_M1_dbpath = os.path.join(_const.DDEPath, 'M1\\' +  code + '_DDE_M1.db')
         con = sqlite3.connect(DDE_M1_dbpath)
         group.to_sql('DDEs', con, if_exists = 'replace', index = False)
         con.close()

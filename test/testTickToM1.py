@@ -13,15 +13,21 @@ def _high_price(g):
     return gf.idxmin() <= gf.idxmax() and np.max(gf) or (-np.max(gf))
 
 
-rootdir = "G:\\work\\sourcecode\\AutoTrader\\test\\ticks"
+rootdir = "E:\\work\\AutoTrader\\AutoTrader\\test\\ticks"
 
-m1rootdir = "G:\\work\\sourcecode\\AutoTrader\\test\\m1s"
+m1rootdir = "E:\\work\\AutoTrader\\AutoTrader\\test\\m1s"
 
 stocks = []
 i = 0
 for parent, dirnames, filenames in os.walk(rootdir):
     for filename in filenames:
         #print(os.path.join(parent,filename))
+
+        x = datetime.datetime.now()
+        print(x, type(x))
+        dt = datetime.timedelta(hours = x.hour, minutes = x.minute, seconds = x.second)
+        print(dt.item())
+        break
 
         (shotname, extension) = os.path.splitext(filename)
         parts = shotname.split('_')
@@ -57,11 +63,11 @@ for parent, dirnames, filenames in os.walk(rootdir):
             continue
 
         print(len(ticks))
-        print(ticks)
+        print(ticks.head())
         #t = ticks['time']
         #print(type(t[0]))
 
-        break
+        print('continue')
 
         del ticks['index']
         del ticks['type']
@@ -87,7 +93,7 @@ for parent, dirnames, filenames in os.walk(rootdir):
         #ticks.columns = ['date', 'time', 'price', '', 'HighPrice', 'Volume', 'Acount']
         ticks.columns = ['date', 'time', 'timeIndex', 'timeIndex2', 'high', 'low', 'open', 'close', 'volume', 'amount']
 
-        #print(ticks.head())
+        print(ticks.head())
         #stocks.append(ticks)
 
         grouped = ticks.groupby(['date', 'timeIndex'])

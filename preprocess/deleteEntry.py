@@ -5,9 +5,9 @@ import sqlite3
 
 from utils import _const
 
-_const.level2_sqlite = 'F:\\level2_sqlite2'
+_const.level2_sqlite = 'G:\\level2_sqlite_16'
 
-_const.deleteDays=['20150414']
+_const.deleteDays=['20160128']
 
 
 
@@ -22,7 +22,7 @@ for parent, dirnames, filenames in os.walk(_const.level2_sqlite):
         sqlitefile = os.path.join(parent, filename)
 
         con = sqlite3.connect(sqlitefile)
-
+        print(sqlitefile)
         for day in _const.deleteDays:
             d = datetime.datetime.strptime(day, "%Y%m%d")
             #print(d)

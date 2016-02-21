@@ -12,7 +12,7 @@ import numpy as np
 import threadpool
 from utils import _const
 
-_const.level2_sqlite = 'F:\\level2_sqlite_2014'
+_const.level2_sqlite = 'G:\\level2_sqlite_16'
 _const.multiThread = False
 
 Pool = threadpool.ThreadPool(1)
@@ -126,7 +126,7 @@ def extractData(zipfile, dst):
 def main(argv):
     rarcmd = '"C:\\Program Files\\WinRAR\\unRar.exe" x '
     z7cmd = '"D:\\Program Files\\7-Zip\\7z.exe" x '
-    for parent, dirnames, filenames in os.walk('G:\\level2\\2014\\'):
+    for parent, dirnames, filenames in os.walk('G:\\level2\\2016\\'):
         for filename in filenames:
             file = os.path.join(parent,filename)
 
