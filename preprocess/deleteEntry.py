@@ -5,9 +5,9 @@ import sqlite3
 
 from utils import _const
 
-_const.level2_sqlite = 'G:\\level2_sqlite_16'
+_const.level2_sqlite = 'F:\\level2_sqlite_2014'
 
-_const.deleteDays=['20160128']
+_const.deleteDays=['20140922']
 
 
 

@@ -20,15 +20,30 @@ def main():
     codes = codeandtime.index
     print(type(codes))
 
-    skip = 0
+    beg = 0
+    end = 400
+    b = 0
+    ee = 0
+    if end <= beg:
+        print('end must > beg')
+        exit()
+
     for code in codes:
-        #skip += 1
-        #if skip < 800:
-        #    continue
-        if code != '002466' and code != '002456':
+        if b < beg:
+            b += 1
+            ee +=1
             continue
 
-        dbpath = 'ticks/' + code + '_ticks.sqlite'
+        if ee == end:
+            break
+
+        ee += 1
+
+
+        #if code != '002466' and code != '002456':
+        #    continue
+
+        dbpath = 'F:\\stock\\ticks\\' + code + '_ticks.sqlite'
         con = sqlite3.connect(dbpath)
 
         print(dbpath)
@@ -61,24 +76,28 @@ def main():
 
         ticks = []
         for oneDay in [date + datetime.timedelta(n) for n in range(dayCount)]:
-            print(oneDay)
+            #print(oneDay)
 
             it = 0
             while(True):
                 try:
                     tickdf = ts.get_tick_data(code, date=oneDay)
                     if tickdf is not None and len(tickdf) > 5:
+                        print(str(oneDay) + " " + str(len(tickdf)))
                         tickdf.insert(0, 'date', oneDay)
                         tickdf.sort_values(by = 'time', ascending = True, inplace = True)
                         #print(tickdf.head())
 
                         ticks.append(tickdf)
 
-                        if len(ticks) >= 100:
+                        if len(ticks) >= 5:
                             ticks_df = pd.concat(ticks)
+                            print('to_sql begin')
                             ticks_df.to_sql('ticks', con, if_exists = 'append', index = False)
+                            print('to_sql end')
                             ticks = []
-
+                    else:
+                        print(str(oneDay) + " 0")
                     break
                 except Exception as e:
                     print(e)
@@ -93,6 +112,7 @@ def main():
 
         if len(ticks) != 0:
             ticks_df = pd.concat(ticks)
+            print(ticks_df.head())
             ticks_df.to_sql('ticks', con, if_exists = 'append', index = False)
 
         con.close()

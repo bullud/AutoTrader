@@ -1,4 +1,5 @@
 from distutils.core import setup
+import py2exe
 
 setup(
     name='AutoTrader',
@@ -8,5 +9,6 @@ setup(
     license='',
     author='lidian',
     author_email='',
-    description=''
+    description='',
+    console=[{"script": "GetHisTickData.py"}]
 )

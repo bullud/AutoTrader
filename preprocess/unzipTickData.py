@@ -12,7 +12,7 @@ import numpy as np
 import threadpool
 from utils import _const
 
-_const.level2_sqlite = 'G:\\level2_sqlite_16'
+_const.level2_sqlite = 'F:\\level2_sqlite_201512'
 _const.multiThread = False
 
 Pool = threadpool.ThreadPool(1)
@@ -63,7 +63,7 @@ def extractData(zipfile, dst):
     print(year, month, day)
 
     #con=MySQLdb.connect(host='localhost', db='trans', user='lidian', passwd='123@321ld')
-    begin = False
+    begin = True
     for parent, dirnames, filenames in os.walk(dst):
         for filename in filenames:
             ext = os.path.splitext(filename)[1][1:].lower()
@@ -133,7 +133,7 @@ def extractData(zipfile, dst):
 def main(argv):
     rarcmd = '"C:\\Program Files\\WinRAR\\unRar.exe" x '
     z7cmd = '"D:\\Program Files\\7-Zip\\7z.exe" x '
-    for parent, dirnames, filenames in os.walk('G:\\level2\\2016\\'):
+    for parent, dirnames, filenames in os.walk('E:\\level2\\2015\\201512'):
         for filename in filenames:
             file = os.path.join(parent,filename)
 
