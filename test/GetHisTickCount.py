@@ -9,9 +9,13 @@ import numpy as np
 import tushare as ts
 import msvcrt
 import math
+from utils import _const
+
+_const.baseInfo='basics.sqlite'
+_const.countDB='F:\\stock\\ticks\\'
 
 def main():
-    con = sqlite3.connect('basics.sqlite')
+    con = sqlite3.connect(_const.baseInfo)
     sql = "SELECT code, timeToMarket from basics"
     codeandtime = pd.read_sql(sql, con,  index_col='code')
     con.close()
@@ -21,7 +25,7 @@ def main():
     print(type(codes))
 
     beg = 0
-    end = 400
+    end = 10000
     b = 0
     ee = 0
     if end <= beg:
@@ -39,23 +43,26 @@ def main():
 
         ee += 1
 
-
-        dbpath = 'F:\\stock\\ticks\\' + code + '_ticks.sqlite'
+        dbpath = _const.countDB + code + '_counts.sqlite'
         con = sqlite3.connect(dbpath)
+        cur = con.cursor()
+
+        cur.execute('create table if not exists counts(date TIMESTAMP, count INTEGER)')
+        con.commit()
+        cur.close()
 
         print(dbpath)
 
         date = None
-        lastticks = None
-        sql = "SELECT date from ticks ORDER by date DESC LIMIT 1"
+        lastcounts = None
+        sql = "SELECT date from counts ORDER by date DESC LIMIT 1"
         try:
-            lastticks = pd.read_sql(sql, con)
+            lastcounts = pd.read_sql(sql, con)
+
         except Exception as e:
             print(e)
-        #finally:
-        #    con.close()
 
-        if lastticks is None or len(lastticks) == 0:
+        if lastcounts is None or len(lastcounts) == 0:
             dateS = codeandtime.ix[code]['timeToMarket'].astype(str)
             if dateS == '0':
                 print('not time for code:' + code )
@@ -65,36 +72,34 @@ def main():
             date = datetime.datetime.strptime(dateS, "%Y%m%d").date()
         else:
             #print(str(lastticks['date'][0] + datetime.timedelta(1)))
-            date = datetime.datetime.strptime(lastticks["date"][0], "%Y-%m-%d").date()  + datetime.timedelta(1)
+            date = datetime.datetime.strptime(lastcounts["date"][0], "%Y-%m-%d").date()  + datetime.timedelta(1)
             print("start date:" + str(date))
-        #break
+
 
         dayCount = (datetime.datetime.today().date() - date).days + 1
 
-        ticks = []
+        counts = []
         for oneDay in [date + datetime.timedelta(n) for n in range(dayCount)]:
-            #print(oneDay)
-
             it = 0
             while(True):
                 try:
+                    l = 0
                     tickdf = ts.get_tick_data(code, date=oneDay)
-                    if tickdf is not None and len(tickdf) > 5:
-                        print(str(oneDay) + " " + str(len(tickdf)))
-                        tickdf.insert(0, 'date', oneDay)
-                        tickdf.sort_values(by = 'time', ascending = True, inplace = True)
-                        #print(tickdf.head())
+                    if tickdf is not None:
+                        l = len(tickdf)
 
-                        ticks.append(tickdf)
+                    print(code + " " + str(oneDay) + ' tick num = ' + str(l))
 
-                        if len(ticks) >= 5:
-                            ticks_df = pd.concat(ticks)
-                            print('to_sql begin')
-                            ticks_df.to_sql('ticks', con, if_exists = 'append', index = False)
-                            print('to_sql end')
-                            ticks = []
-                    else:
-                        print(str(oneDay) + " 0")
+                    counts.append((oneDay, l))
+                    if len(counts) > 10:
+                        cur = con.cursor()
+                        sql = 'INSERT into counts(date, count) values(?, ?)'
+                        cur.executemany(sql, counts)
+                        con.commit()
+
+                        cur.close()
+                        counts = []
+
                     break
                 except Exception as e:
                     print(e)
@@ -107,15 +112,16 @@ def main():
                 print('try more time ' + str(it))
                 continue
 
-        if len(ticks) != 0:
-            ticks_df = pd.concat(ticks)
-            print(ticks_df.head())
-            ticks_df.to_sql('ticks', con, if_exists = 'append', index = False)
+        if len(counts) != 0:
+            cur = con.cursor()
+            sql = 'INSERT into counts(date, count) values(?, ?)'
+            cur.executemany(sql, counts)
+
+            cur.close()
+
 
         con.close()
 
-    #df = ts.get_tick_data('600848',date='2014-01-09')
-    #print(df.head(10))
     return
 
 if __name__ == '__main__':

@@ -55,8 +55,6 @@ for dir in dirs:
                 entries = curs.fetchmany(100000)
 
 
-
-
             curs.close()
             cons.close()
             curd.close()
