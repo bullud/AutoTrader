@@ -11,11 +11,11 @@ import math
 
 from utils import _const
 
-_const.DDEPath='G:\\DDE'
-_const.Level2Path='G:\\level2_sqlite\\'
+_const.DDEPath='I:\\StockData\\DDE\\'
+_const.Level2Path='I:\\StockData\\level2_dst\\'
 
-_const.small = 50000
-_const.middle = 200000
+_const.small = 100000
+_const.middle = 500000
 _const.large = 1000000
 
 def time2Str(x):
@@ -82,17 +82,13 @@ def getL2Data(L2filepath, beginDay):
     return data
 
 def main(argv):
-    #dirpath = 'G:\\level2_sqlite\\'
-    #DDEpath = 'G:\\DDE'
+    #codes = ['SZ002466']
 
-    codes = ['SZ002466']
-
-    date = pd.to_datetime('20160205')
-    #for code in codes:
+    #date = pd.to_datetime('20160205')
 
     for parent, dirnames, filenames in os.walk(_const.Level2Path):
         for filename in filenames:
-            code = filename[0:8]
+            code = filename[0:6]
             print(code)
 
             L2filepath = os.path.join(parent, filename)
@@ -100,8 +96,6 @@ def main(argv):
 
             lastDay = getLastDay(code)
 
-            #stock = pd.read_csv(filepath, header=None, names=['time', 'price', 'bs', 'volumn'],\
-            #                    converters={'time':str})
             if lastDay == None:
                 stock = getL2Data(L2filepath, None)
             else:
@@ -156,7 +150,7 @@ def main(argv):
 
             #group['timeIndex'] = group['timeIndex']
 
-            print(group.head(96))
+            print(group.head())
 
             DDE_M1_dir = os.path.join(_const.DDEPath, 'M1\\')
             if os.path.exists(DDE_M1_dir) == False:
@@ -165,10 +159,10 @@ def main(argv):
             DDE_M1_dbpath = os.path.join(DDE_M1_dir, code + '_DDE_M1.db')
 
             con = sqlite3.connect(DDE_M1_dbpath)
-            group.to_sql('DDEs', con, if_exists = 'replace', index = False)
+            group.to_sql('DDEs', con, if_exists = 'replace', index = True)
             con.close()
 
-            return
+            #return
 
 
 if __name__ == '__main__':
