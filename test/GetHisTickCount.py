@@ -24,7 +24,7 @@ def main():
     codes = codeandtime.index
     print(type(codes))
 
-    beg = 0
+    beg = 1000
     end = 10000
     b = 0
     ee = 0
@@ -116,7 +116,7 @@ def main():
             cur = con.cursor()
             sql = 'INSERT into counts(date, count) values(?, ?)'
             cur.executemany(sql, counts)
-
+            con.commit()
             cur.close()
 
 
