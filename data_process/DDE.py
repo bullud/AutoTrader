@@ -12,6 +12,7 @@ import queue
 import threadpool
 import threading
 
+
 from utils import _const
 
 _const.threadNum = 4
@@ -22,6 +23,8 @@ _const.Level2Path='I:\\StockData\\level2_dst\\'
 _const.small = 100000
 _const.middle = 500000
 _const.large = 1000000
+
+diskIOlock = threading.Lock()
 
 #paramWrapper for thread
 class pWrapper:
@@ -109,6 +112,9 @@ def getLastDay(table, dbpath):
         return lastTime, complete
 
     sql = "SELECT date from " + table +  " ORDER by date DESC LIMIT 1"
+
+    diskIOlock.acquire()
+
     con = sqlite3.connect(dbpath)
 
     try:
@@ -133,6 +139,8 @@ def getLastDay(table, dbpath):
 
     con.close()
 
+    diskIOlock.release()
+
     return lastDay, complete
 
 def getL2Data(L2filepath, beginDay):
@@ -140,6 +148,8 @@ def getL2Data(L2filepath, beginDay):
 
     if os.path.exists(L2filepath) == False:
         return None
+
+    diskIOlock.acquire()
 
     con = sqlite3.connect(L2filepath)
     sql = ''
@@ -154,6 +164,8 @@ def getL2Data(L2filepath, beginDay):
         print('read L2 data exception')
 
     con.close()
+
+    diskIOlock.release()
 
     return data
 
@@ -232,9 +244,11 @@ def computeDDE(code, threadindex):
 
     #group['timeIndex'] = group['timeIndex']
 
+    diskIOlock.acquire()
     con = sqlite3.connect(DDE_M1_dbpath)
     group.to_sql('DDEs', con, if_exists = 'append', index = True)
     con.close()
+    diskIOlock.release()
 
 
 def job(args):

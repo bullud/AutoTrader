@@ -17,7 +17,7 @@ from utils import _const
 _const.threadNum = 4
 _const.BasicInfoPath='I:\\StockData\\BasicInfo\\basics.sqlite'
 _const.DDEPath='I:\\StockData\\DDE\\'
-_const.MAPath='I:\StockData\\MA\\'
+_const.MAPath='I:\\StockData\\MA\\'
 _const.Level2Path='I:\\StockData\\level2_dst\\'
 
 
@@ -241,27 +241,36 @@ def computeDDE(code, threadindex):
 def getDBPath(code, type):
     DBPath = ''
     if type == 'DDE_M1':
-        DDE_M1_dir = os.path.join(_const.DDEPath, 'M1\\')
+        DDE_M1_dir = os.path.join(_const.DDEPath, 'M1')
         if os.path.exists(DDE_M1_dir) == False:
             os.makedirs(DDE_M1_dir)
         DBPath = os.path.join(DDE_M1_dir, code + '_DDE_M1.db')
     elif type == 'MA_M1':
-        MA_M1_dir = os.path.join(_const.MAPath, 'M1\\')
+        MA_M1_dir = os.path.join(_const.MAPath, 'M1')
         if os.path.exists(MA_M1_dir) == False:
             os.makedirs(MA_M1_dir)
         DBPath = os.path.join(MA_M1_dir, code + '_MA_M1.db')
     elif type == 'L2':
         DBPath = os.path.join(_const.Level2Path, code + ".db")
 
-
     return DBPath
 
 
-def compute(code, threadindex):
+def computeALL(code, threadindex):
     DDE_M1_DB = getDBPath(code, 'DDE_M1')
     L2_DB = getDBPath(code, 'L2')
 
+    DDE_M1_lastDay, DDE_M1_complete = getLastDay('DDEs', DDE_M1_DB)
+    #MA_M1_lastDay, MA_M1_complete = getLastDay('MAs', DDE_M1_DB)
 
+    if DDE_M1_lastDay == None:
+        print(code + ' no LastDay data')
+        stock = getL2Data(L2_DB, None)
+    else:
+        if complete == True:
+            stock = getL2Data(L2_DB, lastDay + datetime.timedelta(days = 1))
+        else:
+            stock = getL2Data(L2_DB, lastDay)
 
 
 def job(args):

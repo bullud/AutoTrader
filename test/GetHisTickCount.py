@@ -15,6 +15,9 @@ _const.baseInfo='basics.sqlite'
 _const.countDB='F:\\stock\\ticks\\'
 
 def main():
+    if os.path.exists(_const.countDB) == False:
+         os.makedirs(_const.countDB)
+
     con = sqlite3.connect(_const.baseInfo)
     sql = "SELECT code, timeToMarket from basics"
     codeandtime = pd.read_sql(sql, con,  index_col='code')
