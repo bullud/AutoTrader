@@ -24,8 +24,8 @@ def main():
     codes = codeandtime.index
     print(type(codes))
 
-    beg = 1000
-    end = 10000
+    beg = 0
+    end = 1000
     b = 0
     ee = 0
     if end <= beg:

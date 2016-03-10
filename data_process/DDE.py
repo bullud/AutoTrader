@@ -254,8 +254,12 @@ def main(argv):
     jobqueue = queue.Queue()
 
     codes = getCodes(_const.BasicInfoPath)
-
+    beg = 1000
+    end = 10000
+    i = 0
     for code in codes:
+        if i < beg or i >= end:
+            continue
         jobqueue.put(code)
 
     Pool = threadpool.ThreadPool(_const.threadNum)
