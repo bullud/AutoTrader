@@ -259,7 +259,9 @@ def main(argv):
     i = 0
     for code in codes:
         if i < beg or i >= end:
+            i+=1
             continue
+        i+=1
         jobqueue.put(code)
 
     Pool = threadpool.ThreadPool(_const.threadNum)
