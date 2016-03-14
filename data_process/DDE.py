@@ -11,19 +11,11 @@ import math
 import queue
 import threadpool
 import threading
-
+import time
 
 from utils import _const
+from utils import config_test
 
-_const.threadNum = 4
-_const.BasicInfoPath='I:\\StockData\\BasicInfo\\basics.sqlite'
-_const.DDEPath='I:\\StockData\\DDEtest'
-_const.Level2Path='I:\\StockData\\level2_sqlite_15'
-
-_const.small = 100000
-_const.middle = 500000
-_const.large = 1000000
-_const.minDate = datetime.datetime.strptime('1980-10-24 08:00:00', "%Y-%m-%d %H:%M:%S")
 
 diskIOlock = threading.Lock()
 
@@ -46,7 +38,10 @@ class DDE:
         for tMode in self._timeModes:
             DDE_M_dir = os.path.join(self._DDEPath, tMode)
             if os.path.exists(DDE_M_dir) == False:
-                os.makedirs(DDE_M_dir)
+                try:
+                    os.makedirs(DDE_M_dir)
+                except:
+                    return
 
     def getDBPath(self, code, tMode):
         DBPath = os.path.join(self._DDEPath, tMode, code + '_DDE_' + tMode + '.db')
@@ -71,23 +66,26 @@ class DDE:
             lastTime = pd.read_sql(sql, con)
         except Exception as e:
             print(e)
-
+        con.close()
         if lastTime is not None and len(lastTime) != 0:
             #read_sql默认读出的date数据类型是str，需要转换为datetime类型
             lt = datetime.datetime.strptime(lastTime['date'][0], "%Y-%m-%d %H:%M:%S")
             #don't make a completion check
-            complete = True
+            #complete = True
             #print('hour = ' + str(lt.hour))
-            #if lt.hour == 15:
+
+            endT = lt + datetime.timedelta(minutes = int(tMode[1:]))
+            if endT.hour == 15:
                 #暂不考虑熔断提前收盘的情况,默认15点收盘
-            #    complete = True
-            #else:
-            #    complete = False
-            lastDay = lt.date()
+                complete = True
+                lastDay = lt.date()
+            else:
+                complete = False
+                self.cleanEntry(code, tMode, lt.date(), datetime.timedelta(days = 1))
+                lastDay = lt.date() - datetime.timedelta(days=1)
 
-        con.close()
 
-        return (tMode, lastDay, complete)
+        return (tMode, lastDay)
 
     def getLastDays(self, code):
         lastDays = []
@@ -169,9 +167,8 @@ class DDE:
 
             ti.insert(0, 'amountN'  + str(i), ti.pop('amountN'))
             ti.insert(0, 'volumnN'  + str(i), ti.pop('volumnN'))
-            ti.insert(0, 'amount'  + str(i), ti.pop('amount'))
-            ti.insert(0, 'volumn'  + str(i), ti.pop('volumn'))
-
+            ti.insert(0, 'amount'   + str(i), ti.pop('amount'))
+            ti.insert(0, 'volumn'   + str(i), ti.pop('volumn'))
 
             #print(ti.head(5))
             data = pd.concat([data, ti], axis = 1)
@@ -185,7 +182,8 @@ class DDE:
 
     def computeOneMode(self, data, dMode, tMode):
         if dMode == 'L2':
-            print(data.head())
+            #print(data.head())
+            print('preProcess L2 data')
             data = self.preProcess(data)
 
         def getM(t):
@@ -252,6 +250,8 @@ class DDE:
 
         for lastDay in lastDays:
             if lastDay[1] < maxDay:
+                print("process single tMode:%s" %(lastDay[0]))
+                begt = time.time()
                 #queryStr = 'date > "' + str(lastDay[1]) + '" & ' + 'date <= "' + str(maxDay) + '"'
                 queryStr = '"' + str(lastDay[1]) + '" < date <= "' + str(maxDay) + '"'
                 print(queryStr)
@@ -261,18 +261,24 @@ class DDE:
                 print(result.head(15))
                 print(result.tail(15))
                 self.storeToDB(code, result, lastDay[0])
+                endt = time.time()
+                print("process single tMode:%s end, time: %s" %(lastDay[0], str(endt - begt)))
 
 
         lastMode = 'L2'
-        lastData = L2Data.query('date > "' + str(maxDay) + '"').copy(True)
+        #lastData = L2Data.query('date > "' + str(maxDay) + '"').copy(True)
+        lastData = L2Data[L2Data.date > maxDay].copy(True)
 
         for lastDay in lastDays:
+            print("computeOneMode %s begin" %(lastDay[0]))
+            begt = time.time()
             lastData = self.computeOneMode(lastData, lastMode, lastDay[0])
             print(lastData.head(15))
             print(lastData.tail(15))
             self.storeToDB(code, lastData, lastDay[0])
             lastMode = lastDays[0]
-
+            endt = time.time()
+            print("computeOneMode %s end, time: %s" %(lastDay[0], str(begt - endt)))
 
 
 def main(argv):
@@ -293,7 +299,7 @@ def main(argv):
     lt5 = datetime.datetime.strptime('1980-10-24 08:00:00', "%Y-%m-%d %H:%M:%S")
 
     #lastDays=[('M1', lt, True), ('M5', lt, True), ('M15', lt, True), ('M30', lt, True), ('M60', lt, True), ('M120', lt, True)]
-    lastDays=[('M1', lt1, True), ('M5', lt5, True)]
+    lastDays=[('M1', lt1), ('M5', lt5)]
 
     dde = DDE(_const.DDEPath)
 
