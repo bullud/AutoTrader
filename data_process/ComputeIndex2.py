@@ -90,11 +90,6 @@ def computeALL(code, tasks, threadindex):
             if len(L2Data) == 0:
                 return
 
-            begt= time.time()
-            L2Data = dde.preProcess(L2Data)
-            endt = time.time()
-            print('%s preProcess L2 data end, time: %f' %(code, endt - begt))
-
             dde.computeModes(code, L2Data, None, threadindex)
 
 
