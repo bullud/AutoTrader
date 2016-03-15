@@ -182,16 +182,6 @@ class DDE:
         return data
 
     def computeOneMode(self, data, dMode, tMode):
-        #if dMode == 'L2':
-            #print(data.head())
-        #    print('preProcess L2 data start', end='')
-        #    begt= time.time()
-        #    data = self.preProcess(data)
-        #    endt = time.time()
-        #    print(' end, time: %f' %(endt - begt))
-            #print(data.head())
-            #print(data.tail())
-
         def getM(t):
             step = t*60
             def getM_(x):
@@ -227,8 +217,6 @@ class DDE:
             return
 
         data['date'] = data['date'].apply(getMt)
-        #print(data)
-
 
         grouped = data.groupby(['date'], as_index=True)
 
@@ -279,15 +267,17 @@ class DDE:
                 endt = time.time()
 
 
-                print("process single %s tMode:%s end, time: %f" %(code, lastDay[0], endt - begt))
+                print("%s process single tMode:%s end, time: %f" %(code, lastDay[0], endt - begt))
 
-
+        print(str(maxDay))
         lastMode = 'L2'
-        lastData = L2Data.query('date > "' + str(maxDay) + '"').copy(True)
+        lastData = L2Data.query('date > "' + str(maxDay + datetime.timedelta(days = 1)) + '"').copy(True)
         #lastData = L2Data[L2Data.date > maxDay].copy(True)
         if len(lastData) == 0:
             return
+        print(len(lastData))
 
+        print(lastData.head())
         for lastDay in lastDays:
             begt = time.time()
 
@@ -298,7 +288,7 @@ class DDE:
             lastMode = lastDays[0]
             endt = time.time()
 
-            print("computeOneMode %s tMode:%s end, time: %f" %(code, lastDay[0], endt - begt))
+            print("%s  computeOneMode tMode:%s end, time: %f" %(code, lastDay[0], endt - begt))
 
 
 def main(argv):

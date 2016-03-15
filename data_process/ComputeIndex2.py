@@ -44,9 +44,9 @@ def getL2Data(L2filepath, beginDay):
     con = sqlite3.connect(L2filepath)
     sql = ''
     if beginDay == None:
-        sql = 'SELECT * from trans'
+        sql = 'SELECT * from DDEs'
     else:
-        sql = 'SELECT * from trans where date >= "' + str(beginDay) + '"'
+        sql = 'SELECT * from DDEs where date >= "' + str(beginDay) + '"'
 
     try:
         data = pd.read_sql(sql, con)
@@ -66,8 +66,8 @@ def createTable(dbpath, schema):
 
 def getDBPath(code, type):
     DBPath = ''
-    if type == 'L2':
-        DBPath = os.path.join(_const.Level2Path, code + ".db")
+    #if type == 'L2':
+    DBPath = os.path.join(_const.Level2Path2, code + ".db")
 
     return DBPath
 
@@ -78,18 +78,11 @@ def computeALL(code, tasks, threadindex):
     for task in tasks:
         if task == 'DDE':
             dde = DDE.DDE(_const.DDEPath)
-            lastDays = dde.getLastDays(code)
-
-            minLastDay = _const.maxDate
-            for lastDay in lastDays:
-                if lastDay[1] < minLastDay:
-                    minLastDay = lastDay[1]
-
-            print('%s minLastDay = %s' %(code, str(minLastDay)))
 
             #print('%d, %s, loading L2 Data begin'%(threadindex, code), end='')
             begt = time.time()
-            L2Data = getL2Data(getDBPath(code, 'L2'), minLastDay + datetime.timedelta(days=1))
+            L2Data = getL2Data(getDBPath(code), 'L2', None)
+
             endt = time.time()
             print('%s loading L2 Data %d, time: %f'%(code, len(L2Data), endt - begt))
 
