@@ -4,7 +4,7 @@ import os
 import os.path
 import pandas as pd
 from pandas import DataFrame
-from peewee import *
+#from peewee import *
 import sqlite3
 import datetime
 import math
@@ -73,8 +73,9 @@ class DDE:
             #don't make a completion check
             #complete = True
             #print('hour = ' + str(lt.hour))
-
+            #print(str(lt))
             endT = lt + datetime.timedelta(minutes = int(tMode[1:]))
+            #print(str(endT))
             if endT.hour == 15:
                 #暂不考虑熔断提前收盘的情况,默认15点收盘
                 complete = True
@@ -135,7 +136,7 @@ class DDE:
 
     def storeToDB(self, code, data, tMode):
         DBPath = self.getDBPath(code, tMode)
-        print("DBPath = " + DBPath)
+        #print("DBPath = " + DBPath)
         con = sqlite3.connect(DBPath)
         data.to_sql(self._table, con, if_exists = 'append', index = False)
         con.close()
@@ -181,10 +182,15 @@ class DDE:
         return data
 
     def computeOneMode(self, data, dMode, tMode):
-        if dMode == 'L2':
+        #if dMode == 'L2':
             #print(data.head())
-            print('preProcess L2 data')
-            data = self.preProcess(data)
+        #    print('preProcess L2 data start', end='')
+        #    begt= time.time()
+        #    data = self.preProcess(data)
+        #    endt = time.time()
+        #    print(' end, time: %f' %(endt - begt))
+            #print(data.head())
+            #print(data.tail())
 
         def getM(t):
             step = t*60
@@ -197,9 +203,18 @@ class DDE:
                 else:
                     allseconds = x.hour*3600 + x.minute*60 + x.second
 
-                dti = datetime.timedelta(seconds = allseconds - allseconds % step )
-                d = datetime.datetime.strptime(x.strftime('%Y-%m-%d'), '%Y-%m-%d')
-                time = d + dti
+                if x.hour < 13:
+                    deltaseconds = allseconds - (9*3600 + 30*60)
+
+                    dti = datetime.timedelta(seconds = deltaseconds - deltaseconds % step )
+                    d = datetime.datetime.strptime(x.strftime('%Y-%m-%d'), '%Y-%m-%d')
+                    time = d + datetime.timedelta(seconds = 9*3600 + 30*60) + dti
+                else:
+                    deltaseconds = allseconds - (13*3600)
+
+                    dti = datetime.timedelta(seconds = deltaseconds - deltaseconds % step )
+                    d = datetime.datetime.strptime(x.strftime('%Y-%m-%d'), '%Y-%m-%d')
+                    time = d + datetime.timedelta(seconds = 13*3600) + dti
 
                 return time
             #f  = lambda x: datetime.timedelta(seconds = (x.item() - x.item() % step )/1000000000)
@@ -242,7 +257,7 @@ class DDE:
             if lastDay[1] > maxDay:
                 maxDay = lastDay[1]
 
-        print('maxDay = ' + str(maxDay))
+       # print('maxDay = ' + str(maxDay))
 
         if self.checkModes(tModes) == False:
             print('the tmode sequence is not correct')
@@ -250,7 +265,7 @@ class DDE:
 
         for lastDay in lastDays:
             if lastDay[1] < maxDay:
-                print("process single tMode:%s" %(lastDay[0]))
+                #print("process single tMode:%s" %(lastDay[0]))
                 begt = time.time()
                 #queryStr = 'date > "' + str(lastDay[1]) + '" & ' + 'date <= "' + str(maxDay) + '"'
                 queryStr = '"' + str(lastDay[1]) + '" < date <= "' + str(maxDay) + '"'
@@ -258,27 +273,32 @@ class DDE:
 
                 data = L2Data.query(queryStr).copy(True)
                 result = self.computeOneMode(data, 'L2', lastDay[0])
-                print(result.head(15))
-                print(result.tail(15))
+                #print(result.head(15))
+                #print(result.tail(15))
                 self.storeToDB(code, result, lastDay[0])
                 endt = time.time()
-                print("process single tMode:%s end, time: %s" %(lastDay[0], str(endt - begt)))
+
+
+                print("process single %s tMode:%s end, time: %f" %(code, lastDay[0], endt - begt))
 
 
         lastMode = 'L2'
-        #lastData = L2Data.query('date > "' + str(maxDay) + '"').copy(True)
-        lastData = L2Data[L2Data.date > maxDay].copy(True)
+        lastData = L2Data.query('date > "' + str(maxDay) + '"').copy(True)
+        #lastData = L2Data[L2Data.date > maxDay].copy(True)
+        if len(lastData) == 0:
+            return
 
         for lastDay in lastDays:
-            print("computeOneMode %s begin" %(lastDay[0]))
             begt = time.time()
+
             lastData = self.computeOneMode(lastData, lastMode, lastDay[0])
-            print(lastData.head(15))
-            print(lastData.tail(15))
+            #print(lastData.head(15))
+            #print(lastData.tail(15))
             self.storeToDB(code, lastData, lastDay[0])
             lastMode = lastDays[0]
             endt = time.time()
-            print("computeOneMode %s end, time: %s" %(lastDay[0], str(begt - endt)))
+
+            print("computeOneMode %s tMode:%s end, time: %f" %(code, lastDay[0], endt - begt))
 
 
 def main(argv):

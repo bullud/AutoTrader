@@ -4,7 +4,7 @@ import os
 import os.path
 import pandas as pd
 from pandas import DataFrame
-from peewee import *
+#from peewee import *
 import sqlite3
 import datetime
 import math
@@ -73,7 +73,7 @@ def getDBPath(code, type):
 
 
 def computeALL(code, tasks, threadindex):
-    print('computeALL')
+    #print('computeALL')
 
     for task in tasks:
         if task == 'DDE':
@@ -85,11 +85,20 @@ def computeALL(code, tasks, threadindex):
                 if lastDay[1] < minLastDay:
                     minLastDay = lastDay[1]
 
-            print('%d, %s, loading L2 Data begin'%(threadindex, code))
+            print('%s minLastDay = %s' %(code, str(minLastDay)))
+
+            #print('%d, %s, loading L2 Data begin'%(threadindex, code), end='')
             begt = time.time()
             L2Data = getL2Data(getDBPath(code, 'L2'), minLastDay)
             endt = time.time()
-            print('%d, %s, loading L2 Data end, time: %s'%(threadindex, code, str(endt - begt)))
+            print('%s loading L2 Data begin end, time: %f'%(code, endt - begt))
+
+
+            print('preProcess L2 data start', end='')
+            begt= time.time()
+            L2Data = dde.preProcess(L2Data)
+            endt = time.time()
+            print('%s preProcess L2 data end, time: %f' %(code, endt - begt))
 
             dde.computeModes(code, L2Data, lastDays, threadindex)
 
