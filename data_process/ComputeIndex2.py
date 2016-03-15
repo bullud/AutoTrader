@@ -95,7 +95,7 @@ def computeALL(code, tasks, threadindex):
             endt = time.time()
             print('%s preProcess L2 data end, time: %f' %(code, endt - begt))
 
-            dde.computeModes(code, L2Data, lastDays, threadindex)
+            dde.computeModes(code, L2Data, None, threadindex)
 
 
 def job(args):
