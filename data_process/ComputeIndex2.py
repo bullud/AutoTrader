@@ -91,7 +91,7 @@ def computeALL(code, tasks, threadindex):
                 return
 
             lastDays = []
-            lt = datetime.datetime.strptime('1980-10-24 08:00:00', "%Y-%m-%d %H:%M:%S")
+            lt = datetime.datetime.strptime('1980-10-24 08:00:00', "%Y-%m-%d %H:%M:%S").date()
 
             lastDays=[('M1', lt), ('M5', lt), ('M15', lt), ('M30', lt), ('M60', lt), ('M120', lt)]
 
@@ -101,14 +101,14 @@ def computeALL(code, tasks, threadindex):
 def job(args):
     print('thread: %d start' %(args._index))
     while 1:
-        try:
+        #try:
             j = args._queue.get(block = False)
             if j[0] != '000004':
                 continue
             print('thread %d: %s'%(args._index, j[0]))
             computeALL(j[0], j[1], args._index)
-        except Exception as e:
-            print(e)
+        #except Exception as e:
+        #    print(e)
             #print('exception raise, thread exit')
             break
 
