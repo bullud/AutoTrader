@@ -17,8 +17,6 @@ from utils import config_test
 
 from data_process import DDE
 
-
-
 #paramWrapper for thread
 class pWrapper:
     def __init__(self, queue = None, index = None):
@@ -41,6 +39,8 @@ def getL2Data(L2filepath, beginDay):
     if os.path.exists(L2filepath) == False:
         return None
 
+    print(L2filepath)
+
     con = sqlite3.connect(L2filepath)
     sql = ''
     if beginDay == None:
@@ -51,6 +51,7 @@ def getL2Data(L2filepath, beginDay):
     try:
         data = pd.read_sql(sql, con)
     except Exception as e:
+        print(e)
         print('read L2 data exception')
 
     con.close()
@@ -67,7 +68,7 @@ def createTable(dbpath, schema):
 def getDBPath(code, type):
     DBPath = ''
     #if type == 'L2':
-    DBPath = os.path.join(_const.Level2Path2, code + ".db")
+    DBPath = os.path.join(_const.Level2Path2, code + "_DDE_M1.db")
 
     return DBPath
 
@@ -81,16 +82,20 @@ def computeALL(code, tasks, threadindex):
 
             #print('%d, %s, loading L2 Data begin'%(threadindex, code), end='')
             begt = time.time()
-            L2Data = getL2Data(getDBPath(code), 'L2', None)
+            L2Data = getL2Data(getDBPath(code, 'L2',), None)
 
             endt = time.time()
             print('%s loading L2 Data %d, time: %f'%(code, len(L2Data), endt - begt))
 
-
             if len(L2Data) == 0:
                 return
 
-            dde.computeModes(code, L2Data, None, threadindex)
+            lastDays = []
+            lt = datetime.datetime.strptime('1980-10-24 08:00:00', "%Y-%m-%d %H:%M:%S")
+
+            lastDays=[('M1', lt), ('M5', lt), ('M15', lt), ('M30', lt), ('M60', lt), ('M120', lt)]
+
+            dde.computeModes(code, L2Data, lastDays, threadindex)
 
 
 def job(args):

@@ -240,12 +240,14 @@ class DDE:
     def computeModes(self, code, L2Data, lastDays, threadindex = 0):
         tModes = []
         maxDay = _const.minDate
+
+
         for lastDay in lastDays:
             tModes.append(lastDay[0])
             if lastDay[1] > maxDay:
                 maxDay = lastDay[1]
 
-       # print('maxDay = ' + str(maxDay))
+        #print('maxDay = ' + str(maxDay))
 
         if self.checkModes(tModes) == False:
             print('the tmode sequence is not correct')
