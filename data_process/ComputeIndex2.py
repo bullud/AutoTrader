@@ -56,6 +56,29 @@ def getL2Data(L2filepath, beginDay):
 
     con.close()
 
+    for i in range(4, 0, -1):
+        volumni = 'volumn' + str(i)
+        volumnNi = 'volumnN' + str(i)
+        amounti = 'amount' + str(i)
+        amountNi = 'amountN' + str(i)
+
+        volumnTi = 'volumnT' + str(i)
+        volumnNTi = 'volumnNT' + str(i)
+        amountTi = 'amountT' + str(i)
+        amountNTi = 'amountNT' + str(i)
+
+        data.insert(0, amountNi, data.pop(amountNTi))
+        data.insert(0, volumnNi, data.pop(volumnNTi))
+        data.insert(0, amounti, data.pop(amountTi))
+        data.insert(0, volumni, data.pop(volumnTi))
+
+    data.insert(0, 'amountN', data.pop('amountN'))
+    data.insert(0, 'volumnN', data.pop('volumnN'))
+    data.insert(0, 'amount', data.pop('amount'))
+    data.insert(0, 'volumn', data.pop('volumn'))
+    data.insert(0, 'date', data.pop('date'))
+
+    print(data.head())
     return data
 
 def createTable(dbpath, schema):
@@ -96,6 +119,7 @@ def computeALL(code, tasks, threadindex):
             lastDays=[('M1', lt), ('M5', lt), ('M15', lt), ('M30', lt), ('M60', lt), ('M120', lt)]
 
             dde.computeModes(code, L2Data, lastDays, threadindex)
+
 
 
 def job(args):
