@@ -185,7 +185,11 @@ class DDE:
         def getM(t):
             step = t*60
             def getM_(x):
-                #x = datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
+                #print(type(x))
+                if isinstance(x, str):
+                    x = datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
+
+
                 if x.hour == 9 and x.minute < 30:
                     allseconds = x.hour*3600 + 30*60
                 elif x.hour == 15:

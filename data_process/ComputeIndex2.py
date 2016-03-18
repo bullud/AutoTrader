@@ -103,7 +103,7 @@ def job(args):
     while 1:
         #try:
             j = args._queue.get(block = False)
-            if j[0] != '000004':
+            if j[0] != '300498':
                 continue
             print('thread %d: %s'%(args._index, j[0]))
             computeALL(j[0], j[1], args._index)
