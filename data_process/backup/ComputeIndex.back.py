@@ -41,7 +41,7 @@ def getL2Data(L2filepath, beginDay):
 
     con = sqlite3.connect(L2filepath)
     sql = ''
-    if beginDay is None:
+    if beginDay == None:
         sql = 'SELECT * from trans'
     else:
         sql = 'SELECT * from trans where date >= "' + str(beginDay) + '"'
@@ -74,14 +74,21 @@ def computeALL(code, tasks, threadindex):
     for task in tasks:
         if task == 'DDE':
             dde = DDE.DDE(_const.DDEPath)
-            lastTimes = dde.getLastTimes(code)
+            lastDays = dde.getLastDays(code)
+
+            minLastDay = _const.maxDate
+            for lastDay in lastDays:
+                if lastDay[1] < minLastDay:
+                    minLastDay = lastDay[1]
+
+            print('%s minLastDay = %s' %(code, str(minLastDay)))
 
             #print('%d, %s, loading L2 Data begin'%(threadindex, code), end='')
             begt = time.time()
-            print('lastTimes[0] ' + str(lastTimes[0]))
-            L2Data = getL2Data(getDBPath(code, 'L2'), lastTimes[0][1])
+            L2Data = getL2Data(getDBPath(code, 'L2'), minLastDay + datetime.timedelta(days=1))
             endt = time.time()
             print('%s loading L2 Data %d, time: %f'%(code, len(L2Data), endt - begt))
+
 
             if len(L2Data) == 0:
                 return
@@ -91,7 +98,7 @@ def computeALL(code, tasks, threadindex):
             endt = time.time()
             print('%s preProcess L2 data end, time: %f' %(code, endt - begt))
 
-            dde.computeModes(code, L2Data, lastTimes, threadindex)
+            dde.computeModes(code, L2Data, lastDays, threadindex)
 
 def job(args):
     print('thread: %d start' %(args._index))
