@@ -25,54 +25,12 @@ class pWrapper:
         self._queue = queue
         self._index = index
 
-class DDECache:
-    def __init__(self, DDEPath):
-        self._cache = {}
-        self._DDEPath = DDEPath
-
-    def regData(self, code, tMode, data):
-        return
-        #if tMode in self._cache.keys():
-        #    df = self._cache[tMode]
-        #    df.append(data, ignore_index=True)
-        #else:
-        #    self._cache[tMode] = data
-
-    def getData(self, code, tMode, begTime):
-        DBfilepath = self.getDBPath(code, tMode)
-
-        if os.path.exists(DBfilepath) == False:
-            return None
-
-        con = sqlite3.connect(DBfilepath)
-        sql = ''
-        if begTime is None:
-            sql = 'SELECT * from DDEs'
-        else:
-            sql = 'SELECT * from DDEs where date >= "' + str(begTime) + '"'
-
-        try:
-            data = pd.read_sql(sql, con)
-        except Exception as e:
-            print('read %s data begin from % exception' %(tMode, str(begTime)))
-
-        con.close()
-
-        return data
-
-    def getDBPath(self, code, tMode):
-        DBPath = os.path.join(self._DDEPath, tMode, code + '_DDE_' + tMode + '.db')
-
-        return DBPath
-
-class DDE:
+class DDE2:
     def __init__(self, DDEPath, timeModes = None):
         self._table='DDEs'
         self._DDEPath = DDEPath
         #self._timeModes = ['M1', 'M5', 'M15', 'M30', 'M60', 'M120', 'D1', 'W1', 'mm1', 'mm3', 'mm6', 'mm12']
         self._timeModes = ['M1', 'M5', 'M15', 'M30', 'M60', 'M120', 'D1', 'W1', 'mm1', 'mm3', 'mm6', 'mm12']
-        self._lastMode = {'M1':'L2',   'M5':'M1', 'M15':'M5', 'M30':'M15', 'M60':'M30', 'M120':'M60', \
-                          'D1':'M120', 'W1':'D1', 'mm1':'D1', 'mm3':'mm1', 'mm6':'mm3', 'mm12':'mm6'}
 
         if timeModes != None:
             self._timeModes = timeModes
@@ -90,7 +48,7 @@ class DDE:
 
         return DBPath
 
-    def getLastTime(self, code, tMode):
+    def getLastDay(self, code, tMode):
         complete = False
         lastTime = _const.minDate
 
@@ -112,19 +70,32 @@ class DDE:
         if lastTime is not None and len(lastTime) != 0:
             #read_sql默认读出的date数据类型是str，需要转换为datetime类型
             lt = datetime.datetime.strptime(lastTime['date'][0], "%Y-%m-%d %H:%M:%S")
+
             #always recalculate the last period data for sake the possible new data
+            if tMode[0] == 'M':
+                self.cleanEntry(code, tMode, lt.date(), None)
 
-            self.cleanEntry(code, tMode, lt, None)
-        #print('lastTime = '+ str(lt))
-        return (tMode, lt)
+                endT = lt + datetime.timedelta(minutes = int(tMode[1:]))
+                if endT.hour == 15:
+                    #暂不考虑熔断提前收盘的情况,默认15点收盘
+                    complete = True
+                    lastDay = lt.date()
+                else:
+                    complete = False
+                    self.cleanEntry(code, tMode, lt, datetime.timedelta(days = 1))
+                    lastDay = lt.date() - datetime.timedelta(days=1)
+            else:
+                print('unsupported tMode')
 
-    def getLastTimes(self, code):
-        lastTimes = []
+        return (tMode, lastDay)
+
+    def getLastDays(self, code):
+        lastDays = []
         for tMode in self._timeModes:
-            lastTime = self.getLastTime(code, tMode)
-            lastTimes.append(lastTime)
+            lastDay = self.getLastDay(code, tMode)
+            lastDays.append(lastDay)
 
-        return lastTimes
+        return lastDays
 
     def cleanEntry(self, code, tMode, tpoint, tspan):
         DBPath = self.getDBPath(code, tMode)
@@ -211,7 +182,7 @@ class DDE:
 
         return data
 
-    def computeOneMode(self, data, tMode):
+    def computeOneMode(self, data, dMode, tMode):
         def getM(t):
             step = t*60
             def getM_(x):
@@ -298,44 +269,74 @@ class DDE:
                 return False
         return  True
 
-    def getLastMode(self, curtMode):
-        return self._lastMode[curtMode]
+    def computeModes(self, code, L2Data, lastDays, threadindex = 0):
+        tModes = []
+        maxDay = _const.minDate
 
-    def computeModes(self, code, L2Data, lastTimes, threadindex = 0):
-        cache = DDECache(self._DDEPath)
-        cache.regData(code, 'L2', L2Data)
+        for lastDay in lastDays:
+            tModes.append(lastDay[0])
+            if lastDay[1] > maxDay:
+                maxDay = lastDay[1]
 
-        #lastMode = 'L2'
-        for lastTime in lastTimes:
+        #print('maxDay = ' + str(maxDay))
+
+        if self.checkModes(tModes) == False:
+            print('the tmode sequence is not correct')
+            print(tModes)
+
+        for lastDay in lastDays:
+            if lastDay[1] < maxDay:
+                #print("process single tMode:%s" %(lastDay[0]))
+                begt = time.time()
+                #queryStr = 'date > "' + str(lastDay[1]) + '" & ' + 'date <= "' + str(maxDay) + '"'
+                queryStr = '"' + str(lastDay[1]) + '" < date <= "' + str(maxDay) + '"'
+                print(queryStr)
+
+                data = L2Data.query(queryStr).copy(True)
+                result = self.computeOneMode(data, 'L2', lastDay[0])
+                #print(result.head(15))
+                #print(result.tail(15))
+                if result is None:
+                    continue
+
+                self.storeToDB(code, result, lastDay[0])
+                endt = time.time()
+
+                print("%s process single tMode:%s end, time: %f" %(code, lastDay[0], endt - begt))
+
+        print(str(maxDay))
+        lastMode = 'L2'
+        lastData = L2Data.query('date > "' + str(maxDay + datetime.timedelta(days = 1)) + '"').copy(True)
+        #lastData = L2Data[L2Data.date > maxDay].copy(True)
+        if len(lastData) == 0:
+            return
+
+        print(len(lastData))
+
+        #print(lastData.head())
+        for lastDay in lastDays:
             begt = time.time()
-            curMode = lastTime[0]
-            lastMode = self.getLastMode(curMode)
-            if lastMode == 'L2':
-                lastData = L2Data
-            else:
-                lastData = cache.getData(code, lastMode, lastTime[1])
 
-            print(len(lastData))
-            if lastData is None or len(lastData) == 0:
-                lastMode = curMode
+            if lastData is None:
                 continue
 
-            curData = self.computeOneMode(lastData, curMode)
+            lastData = self.computeOneMode(lastData, lastMode, lastDay[0])
             #print(lastData.head(15))
+            #print(lastData.tail(15))
 
-            if curData is None or len(curData) == 0:
+            if lastData is None:
                 continue
 
-            cache.regData(code, curMode, curData)
-            self.storeToDB(code, curData, curMode)
+            self.storeToDB(code, lastData, lastDay[0])
+            lastMode = lastDays[0]
             endt = time.time()
 
-            print("%s  computeOneMode tMode:%s end, time: %f" %(code, curMode, endt - begt))
+            print("%s  computeOneMode tMode:%s end, time: %f" %(code, lastDay[0], endt - begt))
 
 
 def main(argv):
     code = '000008'
-    L2Path = os.path.join(_const.Level2Pathw, code + ".db")
+    L2Path = os.path.join(_const.Level2Path, code + ".db")
     con = sqlite3.connect(L2Path)
 
     sql = 'SELECT * from trans'
@@ -354,7 +355,7 @@ def main(argv):
     #lastDays=[('M1', lt1), ('M5', lt5)]
     lastDays=[('D1', lt1)]
 
-    dde = DDE(_const.DDEPathw)
+    dde = DDE(_const.DDEPath)
 
     dde.computeModes(code, data, lastDays)
 

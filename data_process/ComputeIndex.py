@@ -37,15 +37,17 @@ def getL2Data(L2filepath, beginDay):
     data = None
 
     if os.path.exists(L2filepath) == False:
+        print('L2 file not exist: %s' %L2filepath)
         return None
 
     con = sqlite3.connect(L2filepath)
+
     sql = ''
     if beginDay is None:
         sql = 'SELECT * from trans'
     else:
         sql = 'SELECT * from trans where date >= "' + str(beginDay) + '"'
-
+    print(sql)
     try:
         data = pd.read_sql(sql, con)
     except Exception as e:
@@ -64,7 +66,7 @@ def createTable(dbpath, schema):
 def getDBPath(code, type):
     DBPath = ''
     if type == 'L2':
-        DBPath = os.path.join(_const.Level2Path, code + ".db")
+        DBPath = os.path.join(_const.Level2Pathw, code + ".db")
 
     return DBPath
 
@@ -73,17 +75,21 @@ def computeALL(code, tasks, threadindex):
 
     for task in tasks:
         if task == 'DDE':
-            dde = DDE.DDE(_const.DDEPath)
+            dde = DDE.DDE(_const.DDEPathw)
             lastTimes = dde.getLastTimes(code)
 
             #print('%d, %s, loading L2 Data begin'%(threadindex, code), end='')
             begt = time.time()
-            print('lastTimes[0] ' + str(lastTimes[0]))
+            #print('lastTimes[0] ' + str(lastTimes[0]))
             L2Data = getL2Data(getDBPath(code, 'L2'), lastTimes[0][1])
             endt = time.time()
-            print('%s loading L2 Data %d, time: %f'%(code, len(L2Data), endt - begt))
 
-            if len(L2Data) == 0:
+            if L2Data is not None:
+                print('%s loading L2 Data %d, time: %f'%(code, len(L2Data), endt - begt))
+            else:
+                print('%s loading L2 Data %d, time: %f'%(code, 0, endt - begt))
+
+            if L2Data is None or len(L2Data) == 0:
                 return
 
             begt= time.time()
@@ -114,8 +120,8 @@ def main(argv):
 
     tasks = ['DDE', 'MA', 'EMA', 'MACD']
 
-    print(_const.BasicInfoPath)
-    codes = getCodes(_const.BasicInfoPath)
+    print(_const.BasicInfoPathw)
+    codes = getCodes(_const.BasicInfoPathw)
 
     for code in codes:
         jobqueue.put((code, tasks))

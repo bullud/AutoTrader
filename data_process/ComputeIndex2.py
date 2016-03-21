@@ -15,7 +15,7 @@ import time
 from utils import _const
 from utils import config_test
 
-from data_process import DDE
+from data_process import DDE2
 
 #paramWrapper for thread
 class pWrapper:
@@ -91,7 +91,7 @@ def createTable(dbpath, schema):
 def getDBPath(code, type):
     DBPath = ''
     #if type == 'L2':
-    DBPath = os.path.join(_const.Level2Path2, code + "_DDE_M1.db")
+    DBPath = os.path.join(_const.Level2PathM, code + "_DDE_M1.db")
 
     return DBPath
 
@@ -101,7 +101,7 @@ def computeALL(code, tasks, threadindex):
 
     for task in tasks:
         if task == 'DDE':
-            dde = DDE.DDE(_const.DDEPath)
+            dde = DDE2.DDE2(_const.DDEPathw)
 
             #print('%d, %s, loading L2 Data begin'%(threadindex, code), end='')
             begt = time.time()
@@ -144,8 +144,8 @@ def main(argv):
 
     tasks = ['DDE', 'MA', 'EMA', 'MACD']
 
-    print(_const.BasicInfoPath)
-    codes = getCodes(_const.BasicInfoPath)
+    print(_const.BasicInfoPathw)
+    codes = getCodes(_const.BasicInfoPathw)
 
     for code in codes:
         jobqueue.put((code, tasks))
