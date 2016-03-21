@@ -16,6 +16,7 @@ from utils import _const
 from utils import config_test
 
 from data_process import DDE
+from data_process import MA
 
 #paramWrapper for thread
 class pWrapper:
@@ -80,7 +81,7 @@ def computeALL(code, tasks, threadindex):
 
             #print('%d, %s, loading L2 Data begin'%(threadindex, code), end='')
             begt = time.time()
-            #print('lastTimes[0] ' + str(lastTimes[0]))
+
             L2Data = getL2Data(getDBPath(code, 'L2'), lastTimes[0][1])
             endt = time.time()
 
@@ -95,9 +96,34 @@ def computeALL(code, tasks, threadindex):
             begt= time.time()
             L2Data = dde.preProcess(L2Data)
             endt = time.time()
-            print('%s preProcess L2 data end, time: %f' %(code, endt - begt))
+            print('%s DDE preProcess L2 data end, time: %f' %(code, endt - begt))
 
             dde.computeModes(code, L2Data, lastTimes, threadindex)
+
+        if task == 'MA':
+            ma = MA.MA(_const.MAPathw)
+            lastTimes = ma.getLastTimes(code)
+
+            begt = time.time()
+
+            L2Data = getL2Data(getDBPath(code, 'L2'), lastTimes[0][1])
+            endt = time.time()
+
+            if L2Data is not None:
+                print('%s loading L2 Data %d, time: %f'%(code, len(L2Data), endt - begt))
+            else:
+                print('%s loading L2 Data %d, time: %f'%(code, 0, endt - begt))
+
+            if L2Data is None or len(L2Data) == 0:
+                return
+
+            begt= time.time()
+            L2Data = ma.preProcess(L2Data)
+            endt = time.time()
+
+            print('%s ma preProcess L2 data end, time: %f' %(code, endt - begt))
+
+            ma.computeModes(code, L2Data, lastTimes, threadindex)
 
 def job(args):
     print('thread: %d start' %(args._index))
