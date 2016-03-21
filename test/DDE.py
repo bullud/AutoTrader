@@ -42,7 +42,6 @@ def getCodes(dbpath):
     else:
         return []
 
-
 def cleanEntry(tpoint, tspan, table, dbpath):
     con = sqlite3.connect(dbpath)
     cursor = con.cursor()
